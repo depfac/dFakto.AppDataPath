@@ -132,17 +132,14 @@ namespace dFakto.AppDataPath
         {
             if (_config.CleanupTempFileOnClose)
             {
-                foreach (var tempFile in Directory.GetFiles(TempPath))
+                try
                 {
-                    try
-                    {
-                        _logger?.LogInformation($"Emptying '{TempPath}'");
-                        EmptyTemp();
-                    }
-                    catch (Exception e)
-                    {
-                        _logger.LogError(e, $"Unable to empty '{TempPath}'");
-                    }
+                    _logger?.LogInformation($"Emptying '{TempPath}'");
+                    EmptyTemp();
+                }
+                catch (Exception e)
+                {
+                    _logger.LogError(e, $"Unable to empty '{TempPath}'");
                 }
             }
         }
