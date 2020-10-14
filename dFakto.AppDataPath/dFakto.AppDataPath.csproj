@@ -4,6 +4,8 @@
         <TargetFramework>netcoreapp3.1</TargetFramework>
         <RootNamespace>AppDataPath</RootNamespace>
         <VersionPrefix>0.0.1</VersionPrefix>
+        <Copyright>dFakto</Copyright>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
     </PropertyGroup>
 
     <ItemGroup>
