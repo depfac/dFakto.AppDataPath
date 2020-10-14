@@ -32,12 +32,13 @@ namespace dFakto.AppDataPath
             Directory.CreateDirectory(TempPath);
             Directory.CreateDirectory(ConfigPath);
             Directory.CreateDirectory(DataPath);
-            
-            // Cleanup temp directory from eventual remaining files
-            EmptyTemp();
 
             // Logger may be null when loading configuration
             _logger?.LogInformation($"Using '{_basePath}' as Application BasePath");
+
+            // Cleanup temp directory from eventual remaining files
+            _logger?.LogInformation($"Cleaning '{TempPath}' for application startup");
+            EmptyTemp();
         }
 
         /// <summary>
@@ -96,7 +97,6 @@ namespace dFakto.AppDataPath
         /// </summary>
         public void EmptyTemp()
         {
-            _logger.LogInformation($"Emptying '{TempPath}'");
             EmptyDirectory(TempPath);
         }
 
@@ -136,6 +136,7 @@ namespace dFakto.AppDataPath
                 {
                     try
                     {
+                        _logger?.LogInformation($"Emptying '{TempPath}'");
                         EmptyTemp();
                     }
                     catch (Exception e)
