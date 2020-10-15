@@ -5,14 +5,10 @@ namespace dFakto.AppDataPath.Tests
 {
     public class AppDataPathTest
     {
-        public AppDataPathTest()
+        [Fact]
+        public void AppDataPathTest1()
         {
             // Empty
-        }
-
-        [Fact]
-        public void Test1()
-        {
         }
     }
 }
