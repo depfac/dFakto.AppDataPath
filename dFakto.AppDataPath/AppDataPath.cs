@@ -14,9 +14,9 @@ namespace dFakto.AppDataPath
         private readonly ILogger<AppDataPath> _logger;
         private readonly AppDataPathConfig _config;
         private readonly string _basePath;
-        private string ConfigPath => Path.Combine(_basePath, CONFIG_PATH_NAME);
-        private string TempPath => Path.Combine(_basePath, TEMP_PATH_NAME);
-        private string DataPath => Path.Combine(_basePath, DATA_PATH_NAME);
+        public string ConfigPath => Path.Combine(_basePath, CONFIG_PATH_NAME);
+        public string TempPath => Path.Combine(_basePath, TEMP_PATH_NAME);
+        public string DataPath => Path.Combine(_basePath, DATA_PATH_NAME);
 
         public AppDataPath(ILogger<AppDataPath> logger, AppDataPathConfig config)
         {
