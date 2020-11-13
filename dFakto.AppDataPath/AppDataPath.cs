@@ -139,7 +139,7 @@ namespace dFakto.AppDataPath
                 }
                 catch (Exception e)
                 {
-                    _logger.LogError(e, $"Unable to empty '{TempPath}'");
+                    _logger?.LogError(e, $"Unable to empty '{TempPath}'");
                 }
             }
         }
