@@ -2,21 +2,16 @@
 
     <PropertyGroup>
         <RootNamespace>AppDataPath</RootNamespace>
-        <VersionPrefix>0.0.5</VersionPrefix>
+        <VersionPrefix>0.0.7</VersionPrefix>
         <Copyright>dFakto</Copyright>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
-        <TargetFrameworks>netcoreapp3.1;netcoreapp2.1</TargetFrameworks>
+        <TargetFramework>netstandard2.1</TargetFramework>
     </PropertyGroup>
 
-    <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp2.1'">
-        <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="2.1.1" />
-        <PackageReference Include="Microsoft.Extensions.Hosting" Version="2.1.1" />
-        <PackageReference Include="Microsoft.Extensions.Logging" Version="2.1.1" />
-    </ItemGroup>
-
-    <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.1'">
-        <PackageReference Include="Microsoft.Extensions.Hosting" Version="3.1.9" />
-        <PackageReference Include="Microsoft.Extensions.Logging" Version="3.1.9" />
+    <ItemGroup>
+        <PackageReference Include="Microsoft.Extensions.Hosting" Version="3.1.8" />
+        <PackageReference Include="Microsoft.Extensions.Logging" Version="3.1.8" />
+        <PackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="2.2.0" />
     </ItemGroup>
 
 </Project>
