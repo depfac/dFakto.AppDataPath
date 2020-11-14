@@ -27,6 +27,7 @@ namespace dFakto.AppDataPath
             {
                 _basePath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData,
                     Environment.SpecialFolderOption.None);
+                _basePath = Path.Combine(_basePath, System.Reflection.Assembly.GetExecutingAssembly().GetName().Name);
             }
 
             Directory.CreateDirectory(TempPath);
