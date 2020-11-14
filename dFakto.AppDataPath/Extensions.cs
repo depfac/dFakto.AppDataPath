@@ -6,16 +6,16 @@ namespace dFakto.AppDataPath
 {
     public static class Extensions
     {
-        private const string AppDataPathConfig = "AppDataPathConfig";
+        private const string AppDataConfig = "AppDataPathConfig";
 
-        public static IHostBuilder AddAppDataPath(this IHostBuilder hostBuilder, string sectionName)
+        public static IHostBuilder AddAppData(this IHostBuilder hostBuilder, string sectionName)
         {
             hostBuilder.ConfigureAppConfiguration((x, y) =>
             {
-                var appDataConfig = new AppDataPathConfig();
+                var appDataConfig = new AppDataConfig();
                 x.Configuration.GetSection(sectionName).Bind(appDataConfig);
-                var appData = new AppDataPath(null, appDataConfig);
-                hostBuilder.Properties.Add(AppDataPathConfig, appDataConfig);
+                var appData = new AppData(null, appDataConfig);
+                hostBuilder.Properties.Add(AppDataConfig, appDataConfig);
                 foreach (var configFileName in appData.GetConfigFileNames())
                 {
                     // Support other types of config ?
@@ -24,8 +24,8 @@ namespace dFakto.AppDataPath
             });
             hostBuilder.ConfigureServices((x, y) =>
             {
-                y.AddSingleton((AppDataPathConfig) x.Properties[AppDataPathConfig]);
-                y.AddSingleton<AppDataPath>();
+                y.AddSingleton((AppDataConfig) x.Properties[AppDataConfig]);
+                y.AddSingleton<AppData>();
             });
             return hostBuilder;
         }

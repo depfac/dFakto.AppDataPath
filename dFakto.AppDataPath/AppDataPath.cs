@@ -5,20 +5,20 @@ using Microsoft.Extensions.Logging;
 
 namespace dFakto.AppDataPath
 {
-    public class AppDataPath : IDisposable
+    public class AppData : IDisposable
     {
         private const string CONFIG_PATH_NAME = "config";
         private const string TEMP_PATH_NAME = "temp";
         private const string DATA_PATH_NAME = "data";
 
-        private readonly ILogger<AppDataPath> _logger;
-        private readonly AppDataPathConfig _config;
+        private readonly ILogger<AppData> _logger;
+        private readonly AppDataConfig _config;
         private readonly string _basePath;
         public string ConfigPath => Path.Combine(_basePath, CONFIG_PATH_NAME);
         public string TempPath => Path.Combine(_basePath, TEMP_PATH_NAME);
         public string DataPath => Path.Combine(_basePath, DATA_PATH_NAME);
 
-        public AppDataPath(ILogger<AppDataPath> logger, AppDataPathConfig config)
+        public AppData(ILogger<AppData> logger, AppDataConfig config)
         {
             _config = config ?? throw new ArgumentException(nameof(config));
             _basePath = config.BasePath;

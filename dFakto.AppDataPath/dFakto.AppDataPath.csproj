@@ -2,7 +2,7 @@
 
     <PropertyGroup>
         <RootNamespace>AppDataPath</RootNamespace>
-        <VersionPrefix>0.0.8</VersionPrefix>
+        <VersionPrefix>0.0.9</VersionPrefix>
         <Copyright>dFakto</Copyright>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <TargetFramework>netstandard2.1</TargetFramework>
