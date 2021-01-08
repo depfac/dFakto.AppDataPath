@@ -7,30 +7,31 @@ namespace dFakto.AppDataPath
 {
     public class AppData : IDisposable
     {
-        private const string CONFIG_PATH_NAME = "config";
-        private const string TEMP_PATH_NAME = "temp";
-        private const string DATA_PATH_NAME = "data";
+        private const string ConfigPathName = "config";
+        private const string TempPathName = "temp";
+        private const string DataPathName = "data";
 
         private readonly ILogger<AppData> _logger;
         private readonly AppDataConfig _config;
-        private readonly string _basePath;
 
+        public readonly string BasePath;
         public readonly string ConfigSectionName;
-        public string ConfigPath => Path.Combine(_basePath, CONFIG_PATH_NAME);
-        public string TempPath => Path.Combine(_basePath, TEMP_PATH_NAME);
-        public string DataPath => Path.Combine(_basePath, DATA_PATH_NAME);
+
+        public string ConfigPath => Path.Combine(BasePath, ConfigPathName);
+        public string TempPath => Path.Combine(BasePath, TempPathName);
+        public string DataPath => Path.Combine(BasePath, DataPathName);
 
         public AppData(ILogger<AppData> logger, AppDataConfig config, string configSectionName = null)
         {
             ConfigSectionName = configSectionName;
             _config = config ?? throw new ArgumentException(nameof(config));
-            _basePath = config.BasePath;
+            BasePath = config.BasePath;
             _logger = logger;
-            if (string.IsNullOrEmpty(_basePath))
+            if (string.IsNullOrEmpty(BasePath))
             {
-                _basePath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData,
+                BasePath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData,
                     Environment.SpecialFolderOption.None);
-                _basePath = Path.Combine(_basePath, System.Reflection.Assembly.GetEntryAssembly()?.GetName().Name ?? "");
+                BasePath = Path.Combine(BasePath, System.Reflection.Assembly.GetEntryAssembly()?.GetName().Name ?? "");
             }
 
             Directory.CreateDirectory(TempPath);
@@ -38,7 +39,7 @@ namespace dFakto.AppDataPath
             Directory.CreateDirectory(DataPath);
 
             // Logger may be null when loading configuration
-            _logger?.LogInformation($"Using '{_basePath}' as Application BasePath");
+            _logger?.LogInformation($"Using '{BasePath}' as Application BasePath");
 
             // Cleanup temp directory from eventual remaining files
             _logger?.LogInformation($"Cleaning '{TempPath}' for application startup");
@@ -109,7 +110,7 @@ namespace dFakto.AppDataPath
         /// </summary>
         public void EmptyAll()
         {
-            EmptyDirectory(_basePath);
+            EmptyDirectory(BasePath);
         }
 
         /// <summary>
