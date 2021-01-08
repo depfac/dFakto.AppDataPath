@@ -14,7 +14,7 @@ namespace dFakto.AppDataPath
             {
                 var appDataConfig = new AppDataConfig();
                 x.Configuration.GetSection(sectionName).Bind(appDataConfig);
-                var appData = new AppData(null, appDataConfig);
+                var appData = new AppData(null, appDataConfig, sectionName);
                 hostBuilder.Properties.Add(AppDataConfig, appDataConfig);
                 foreach (var configFileName in appData.GetConfigFileNames())
                 {

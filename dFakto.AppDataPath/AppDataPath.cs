@@ -14,12 +14,15 @@ namespace dFakto.AppDataPath
         private readonly ILogger<AppData> _logger;
         private readonly AppDataConfig _config;
         private readonly string _basePath;
+
+        public readonly string ConfigSectionName;
         public string ConfigPath => Path.Combine(_basePath, CONFIG_PATH_NAME);
         public string TempPath => Path.Combine(_basePath, TEMP_PATH_NAME);
         public string DataPath => Path.Combine(_basePath, DATA_PATH_NAME);
 
-        public AppData(ILogger<AppData> logger, AppDataConfig config)
+        public AppData(ILogger<AppData> logger, AppDataConfig config, string configSectionName = null)
         {
+            ConfigSectionName = configSectionName;
             _config = config ?? throw new ArgumentException(nameof(config));
             _basePath = config.BasePath;
             _logger = logger;
