@@ -4,6 +4,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dFakto.AppDataPath", "dFakt
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dFakto.AppDataPath.Tests", "dFakto.AppDataPath.Tests\dFakto.AppDataPath.Tests.csproj", "{542D1CEA-1E4D-4AC2-BCD7-5847893B4D53}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dFakto.AppDataPathSampleHost", "dFakto.AppDataPathSampleHost\dFakto.AppDataPathSampleHost.csproj", "{FC3D3D70-9A91-41F4-873F-9B4B6CE4B310}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,5 +20,9 @@ Global
 		{542D1CEA-1E4D-4AC2-BCD7-5847893B4D53}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{542D1CEA-1E4D-4AC2-BCD7-5847893B4D53}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{542D1CEA-1E4D-4AC2-BCD7-5847893B4D53}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FC3D3D70-9A91-41F4-873F-9B4B6CE4B310}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FC3D3D70-9A91-41F4-873F-9B4B6CE4B310}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FC3D3D70-9A91-41F4-873F-9B4B6CE4B310}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FC3D3D70-9A91-41F4-873F-9B4B6CE4B310}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
