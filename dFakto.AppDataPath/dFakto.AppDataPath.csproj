@@ -1,7 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <RootNamespace>AppDataPath</RootNamespace>
         <VersionPrefix>0.0.13</VersionPrefix>
         <Copyright>dFakto</Copyright>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
