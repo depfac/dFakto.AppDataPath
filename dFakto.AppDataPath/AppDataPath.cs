@@ -1,7 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.CompilerServices;
+using System.Threading;
 using Microsoft.Extensions.Logging;
+
+[assembly:InternalsVisibleTo("dFakto.AppDataPath.Tests")]
 
 namespace dFakto.AppDataPath
 {
@@ -11,28 +15,20 @@ namespace dFakto.AppDataPath
         private const string TempPathName = "temp";
         private const string DataPathName = "data";
 
-        private readonly ILogger<AppData> _logger;
+        private readonly ILogger<AppData>? _logger;
         private readonly AppDataConfig _config;
 
-        public readonly string BasePath;
-        public readonly string ConfigSectionName;
+        public string BasePath;
 
-        public string ConfigPath => Path.Combine(BasePath, ConfigPathName);
-        public string TempPath => Path.Combine(BasePath, TempPathName);
-        public string DataPath => Path.Combine(BasePath, DataPathName);
+        internal string ConfigPath => Path.Combine(BasePath, ConfigPathName);
+        internal string TempPath => Path.Combine(BasePath, TempPathName);
+        internal string DataPath => Path.Combine(BasePath, DataPathName);
 
-        public AppData(ILogger<AppData> logger, AppDataConfig config, string configSectionName = null)
+        public AppData(ILogger<AppData>? logger, AppDataConfig config)
         {
-            ConfigSectionName = configSectionName;
             _config = config ?? throw new ArgumentException(nameof(config));
-            BasePath = config.BasePath;
+            BasePath = config.BasePath ?? GetDefaultBasePath();
             _logger = logger;
-            if (string.IsNullOrEmpty(BasePath))
-            {
-                BasePath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData,
-                    Environment.SpecialFolderOption.None);
-                BasePath = Path.Combine(BasePath, System.Reflection.Assembly.GetEntryAssembly()?.GetName().Name ?? "");
-            }
 
             Directory.CreateDirectory(TempPath);
             Directory.CreateDirectory(ConfigPath);
@@ -44,6 +40,13 @@ namespace dFakto.AppDataPath
             // Cleanup temp directory from eventual remaining files
             _logger?.LogInformation($"Cleaning '{TempPath}' for application startup");
             EmptyTemp();
+        }
+
+        private static string GetDefaultBasePath()
+        {
+            return Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData, Environment.SpecialFolderOption.None),
+                System.Reflection.Assembly.GetEntryAssembly()?.GetName().Name ?? "");
         }
 
         /// <summary>
@@ -82,27 +85,12 @@ namespace dFakto.AppDataPath
         }
 
         /// <summary>
-        /// Delete the contents of a directory. This does not delete the directory itself.
-        /// </summary>
-        /// <param name="path">The path to the directory</param>
-        private void EmptyDirectory(string path)
-        {
-            var di = new DirectoryInfo(path);
-
-            SetAttributesNormal(path);
-            foreach (var file in di.GetFiles())
-                file.Delete();
-            foreach (var directory in di.GetDirectories())
-                directory.Delete(true);
-        }
-
-        /// <summary>
         /// Delete the complete Temporary folder content, useful at launch to cleanup any remaining temporary files of
         /// an eventual crash
         /// </summary>
         public void EmptyTemp()
         {
-            EmptyDirectory(TempPath);
+            new DirectoryInfo(TempPath).DeleteAllContent();
         }
 
         /// <summary>
@@ -110,24 +98,9 @@ namespace dFakto.AppDataPath
         /// </summary>
         public void EmptyAll()
         {
-            EmptyDirectory(BasePath);
+            new DirectoryInfo(BasePath).DeleteAllContent();
         }
-
-        /// <summary>
-        /// Set the attributes of the complete content of a directory to Normal, i.e not ReadOnly
-        /// </summary>
-        /// <param name="dir">Path to the directory</param>
-        private static void SetAttributesNormal(string dir)
-        {
-            var di = new DirectoryInfo(dir);
-
-            foreach (var subDir in di.GetDirectories())
-                SetAttributesNormal(subDir.FullName);
-
-            foreach (var file in di.GetFiles())
-                File.SetAttributes(file.FullName, FileAttributes.Normal);
-        }
-
+        
         public IEnumerable<string> GetConfigFileNames()
         {
             return Directory.GetFiles(ConfigPath);
@@ -139,12 +112,12 @@ namespace dFakto.AppDataPath
             {
                 try
                 {
-                    _logger?.LogInformation($"Emptying '{TempPath}'");
+                    _logger?.LogInformation("Emptying '{TempPath}'",TempPath);
                     EmptyTemp();
                 }
                 catch (Exception e)
                 {
-                    _logger?.LogError(e, $"Unable to empty '{TempPath}'");
+                    _logger?.LogError(e, "Unable to empty '{TempPath}'",TempPath);
                 }
             }
         }

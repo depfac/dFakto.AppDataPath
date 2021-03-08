@@ -1,3 +1,4 @@
+using System.IO;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -14,7 +15,7 @@ namespace dFakto.AppDataPath
             {
                 var appDataConfig = new AppDataConfig();
                 x.Configuration.GetSection(sectionName).Bind(appDataConfig);
-                var appData = new AppData(null, appDataConfig, sectionName);
+                var appData = new AppData(null, appDataConfig);
                 hostBuilder.Properties.Add(AppDataConfig, appDataConfig);
                 foreach (var configFileName in appData.GetConfigFileNames())
                 {
@@ -25,9 +26,37 @@ namespace dFakto.AppDataPath
             hostBuilder.ConfigureServices((x, y) =>
             {
                 y.AddSingleton((AppDataConfig) x.Properties[AppDataConfig]);
+                y.AddSingleton<AppDataMigrator>();
                 y.AddSingleton<AppData>();
             });
             return hostBuilder;
+        }
+
+        /// <summary>
+        /// Delete the contents of a directory. This does not delete the directory itself.
+        /// </summary>
+        /// <param name="directoryInfo">The directory to empty</param>
+        public static void DeleteAllContent(this DirectoryInfo directoryInfo)
+        {
+            SetAttributesNormal(directoryInfo);
+            
+            foreach (var file in directoryInfo.GetFiles())
+                file.Delete();
+            foreach (var directory in directoryInfo.GetDirectories())
+                directory.Delete(true);
+        }
+        
+        /// <summary>
+        /// Set the attributes of the complete content of a directory to Normal, i.e not ReadOnly
+        /// </summary>
+        /// <param name="dir">Path to the directory</param>
+        private static void SetAttributesNormal(DirectoryInfo di)
+        {
+            foreach (var subDir in di.GetDirectories())
+                SetAttributesNormal(subDir);
+
+            foreach (var file in di.GetFiles())
+                File.SetAttributes(file.FullName, FileAttributes.Normal);
         }
     }
 }
