@@ -27,6 +27,7 @@ namespace dFakto.AppDataPath
             {
                 y.AddSingleton((AppDataConfig) x.Properties[AppDataConfig]);
                 y.AddSingleton<AppDataMigrator>();
+                y.AddSingleton<IAppDataMigrationProvider, DefaultAppDataMigrationProvider>();
                 y.AddSingleton<AppData>();
             });
             return hostBuilder;

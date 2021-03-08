@@ -48,7 +48,7 @@ namespace dFakto.AppDataPath
                 _logger.LogInformation("Metavault AppDataPath upgrade recovery complete");
             }
 
-            var migrations = _serviceProvider.GetServices<IAppDataMigration>()
+            var migrations = _serviceProvider.GetService<IAppDataMigrationProvider>().GetAppDataMigration()
                 .Where(x => x.Version > currentVersion)
                 .ToList();
 
