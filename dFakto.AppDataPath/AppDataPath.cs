@@ -131,7 +131,7 @@ namespace dFakto.AppDataPath
             string versionFilePath = GetCurrentVersionFileName();
             
             if (!File.Exists(versionFilePath))
-                return new Version("0.0");
+                return new Version();
             return Version.Parse(File.ReadAllText(versionFilePath));
         }
         

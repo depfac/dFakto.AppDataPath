@@ -88,9 +88,7 @@ namespace dFakto.AppDataPath
                     _logger.LogInformation("Backup restored successfully");
                     throw;
                 }
-
             }
-
         }
         
         private void Restore()
