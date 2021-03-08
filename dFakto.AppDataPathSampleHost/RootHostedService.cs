@@ -1,20 +1,49 @@
+using System;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using dFakto.AppDataPath;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace dFakto.AppDataPathSampleHost
 {
+    public class Mi1 : IAppDataMigration
+    {
+        public Version Version => new Version("1.0");
+
+        public void Upgrade(AppData appData, IServiceProvider serviceProvider)
+        {
+            File.WriteAllText(appData.GetDataFileName("test2.txt"), "CONTENT");
+        }
+    }
+    
+    public class Mi2 : IAppDataMigration
+    {
+        public Version Version => new Version("2.0");
+        public void Upgrade(AppData appData, IServiceProvider serviceProvider)
+        {
+            File.Delete(appData.GetDataFileName("test.txt"));
+           // throw new Exception();
+        }
+    }
+    
     public class RootHostedService : IHostedService
     {
-        private readonly ILogger _logger;
+        private readonly AppData _appData;
+        private readonly ILogger<RootHostedService> _logger;
         
         public RootHostedService(
+            AppData appData,
+            AppDataMigrator appDataMigrator,
             ILogger<RootHostedService> logger,
             IHostApplicationLifetime appLifetime)
         {
+            _appData = appData;
             _logger = logger;
-
+            
+            appDataMigrator.Migrate();
+            
             appLifetime.ApplicationStarted.Register(OnStarted);
             appLifetime.ApplicationStopping.Register(OnStopping);
             appLifetime.ApplicationStopped.Register(OnStopped);
@@ -23,8 +52,8 @@ namespace dFakto.AppDataPathSampleHost
         public Task StartAsync(CancellationToken cancellationToken)
         {
             _logger.LogInformation("1. StartAsync has been called");
-
-            return Task.CompletedTask;
+            
+           return Task.CompletedTask;
         }
 
         public Task StopAsync(CancellationToken cancellationToken)

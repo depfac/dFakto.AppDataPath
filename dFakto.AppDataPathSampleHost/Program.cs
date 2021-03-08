@@ -15,7 +15,11 @@ namespace dFakto.AppDataPathSampleHost
         private static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
                 .AddAppData("section")
-                .ConfigureServices((_, services) =>
-                    services.AddHostedService<RootHostedService>());
+                .ConfigureServices((_, services)=>
+                {
+                    services.AddTransient<IAppDataMigration, Mi1>();
+                    services.AddTransient<IAppDataMigration, Mi2>();
+                    services.AddHostedService<RootHostedService>();
+                });
     }
 }
