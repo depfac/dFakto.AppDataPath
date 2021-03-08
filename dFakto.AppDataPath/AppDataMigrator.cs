@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -46,10 +47,12 @@ namespace dFakto.AppDataPath
                 _logger.LogInformation("Metavault AppDataPath upgrade recovery complete");
             }
 
-            var migrations = _serviceProvider.GetService<IAppDataMigrationProvider>().GetAppDataMigration()
-                .Where(x => x.Version > currentVersion)
-                .ToList();
+            var migrations = _serviceProvider.GetService<IAppDataMigrationProvider>().GetAppDataMigration().ToList();
+            
+            CheckDuplicates(migrations);
 
+            migrations = migrations.Where(x => x.Version > currentVersion).ToList();
+            
             if (migrations.Count == 0)
             {
                 _logger.LogDebug("AppData is already at the latest version");
@@ -90,6 +93,19 @@ namespace dFakto.AppDataPath
                     _logger.LogInformation("Backup restored successfully");
                     throw;
                 }
+            }
+        }
+
+        private static void CheckDuplicates(List<IAppDataMigration> migrations)
+        {
+            var duplicates = migrations.GroupBy(x => x.Version)
+                .Where(g => g.Count() > 1)
+                .ToDictionary(x => x.Key, y => y.Count());
+
+            if (duplicates.Count > 0)
+            {
+                var (version, value) = duplicates.First();
+                throw new Exception($"{value} migrations are targeting the version {version}");
             }
         }
 

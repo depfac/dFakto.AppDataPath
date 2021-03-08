@@ -211,7 +211,7 @@ namespace dFakto.AppDataPath.Tests
                     new Version(1,0),
                     "test.txt",
                     "test"),
-                new ThrowExceptionMigration<IOException>(new Version(1,0))
+                new ThrowExceptionMigration<IOException>(new Version(1,1))
             });
 
             Assert.Throws<IOException>(() => serviceProvider.GetService<AppDataMigrator>().Migrate());
@@ -251,6 +251,18 @@ namespace dFakto.AppDataPath.Tests
             Assert.Equal(new Version(1,0),appData.CurrentVersion);
             Assert.True(File.Exists(appData.GetDataFileName("test.txt")));
             Assert.Equal("original",File.ReadAllText(appData.GetDataFileName("test.txt")));
+        }
+
+        [Fact]
+        public void TestDuplicateMigrationForSameVersionThrowsException()
+        {
+            var serviceProvider = ConfigureServiceProvider(new IAppDataMigration[]
+            {
+                new OverwriteFileMigration(new Version(1,0), "test.txt", "original"),
+                new OverwriteFileMigration(new Version(1,0), "test2.txt", "coucou"),
+            });
+            
+            Assert.Throws<Exception>(() =>serviceProvider.GetService<AppDataMigrator>().Migrate());
         }
     }
 }
