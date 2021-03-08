@@ -105,7 +105,7 @@ namespace dFakto.AppDataPath
             new DirectoryInfo(BasePath).DeleteAllContent();
         }
         
-        public IEnumerable<string> GetConfigFileNames()
+        internal IEnumerable<string> GetConfigFileNames()
         {
             return Directory.GetFiles(ConfigPath);
         }
