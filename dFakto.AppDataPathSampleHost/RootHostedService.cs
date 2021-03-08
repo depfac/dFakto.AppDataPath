@@ -24,7 +24,6 @@ namespace dFakto.AppDataPathSampleHost
         public void Upgrade(AppData appData, IServiceProvider serviceProvider)
         {
             File.Delete(appData.GetDataFileName("test.txt"));
-           // throw new Exception();
         }
     }
     

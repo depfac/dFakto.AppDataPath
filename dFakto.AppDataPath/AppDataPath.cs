@@ -11,6 +11,8 @@ namespace dFakto.AppDataPath
 {
     public class AppData : IDisposable
     {
+        private const string VersionFileName = "VERSION.txt";
+        
         private const string ConfigPathName = "config";
         private const string TempPathName = "temp";
         private const string DataPathName = "data";
@@ -24,6 +26,8 @@ namespace dFakto.AppDataPath
         internal string TempPath => Path.Combine(BasePath, TempPathName);
         internal string DataPath => Path.Combine(BasePath, DataPathName);
 
+        public Version CurrentVersion => GetCurrentVersion();
+
         public AppData(ILogger<AppData>? logger, AppDataConfig config)
         {
             _config = config ?? throw new ArgumentException(nameof(config));
@@ -35,7 +39,7 @@ namespace dFakto.AppDataPath
             Directory.CreateDirectory(DataPath);
 
             // Logger may be null when loading configuration
-            _logger?.LogInformation($"Using '{BasePath}' as Application BasePath");
+            _logger?.LogInformation($"Using '{BasePath}' as Application BasePath (Version : {CurrentVersion})");
 
             // Cleanup temp directory from eventual remaining files
             _logger?.LogInformation($"Cleaning '{TempPath}' for application startup");
@@ -120,6 +124,26 @@ namespace dFakto.AppDataPath
                     _logger?.LogError(e, "Unable to empty '{TempPath}'",TempPath);
                 }
             }
+        }
+        
+        private Version GetCurrentVersion()
+        {
+            string versionFilePath = GetCurrentVersionFileName();
+            
+            if (!File.Exists(versionFilePath))
+                return new Version("0.0");
+            return Version.Parse(File.ReadAllText(versionFilePath));
+        }
+        
+        internal void SetCurrentVersion(Version version)
+        {
+            _logger?.LogInformation("AppData version set to: {Version}",version);
+            File.WriteAllText( GetCurrentVersionFileName(), version.ToString());
+        }
+
+        private string GetCurrentVersionFileName()
+        {
+            return Path.Combine(BasePath, VersionFileName);
         }
     }
 }

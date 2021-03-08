@@ -11,14 +11,12 @@ namespace dFakto.AppDataPath
     public class AppDataMigrator
     {
         private readonly IServiceProvider _serviceProvider;
-        private const string VersionFileName = "VERSION.txt";
         private const string UpgradeFileName = "UPGRADING.txt";
         private const string BackupFileName = "APPDATA_BACKUP.zip";
         
         private readonly AppData _appData;
         private readonly string _backupFilePath;
         private readonly string _upgradeVersionFilePath;
-        private readonly string _versionFilePath;
         private readonly ILogger<AppDataMigrator> _logger;
 
         public AppDataMigrator(IServiceProvider serviceProvider)
@@ -28,7 +26,6 @@ namespace dFakto.AppDataPath
             _appData = _serviceProvider.GetService<AppData>();
             _backupFilePath = Path.Combine(_appData.BasePath, BackupFileName);
             _upgradeVersionFilePath = Path.Combine(_appData.BasePath, UpgradeFileName);
-            _versionFilePath = Path.Combine(_appData.BasePath, VersionFileName);
         }
         
         public void Migrate()
@@ -37,9 +34,9 @@ namespace dFakto.AppDataPath
             // (pre-versioning deployment) tag this as pre-oldest version.
             // The oldest version is responsible for first deployment and migration of legacy
             // appdatapaths.
-            var currentVersion = GetVersion(_versionFilePath);
-            var upgradingVersion = GetVersion(_upgradeVersionFilePath);
-            if (upgradingVersion != null)
+            var currentVersion = _appData.CurrentVersion;
+            
+            if (MigrationAborted)
             {
                 // If an upgrade has already been attempted, then we are probably recovering from a crash,
                 // so run Restore procedures before trying to upgrade or running the app.
@@ -67,20 +64,19 @@ namespace dFakto.AppDataPath
                 
                 try
                 {
-                    if (currentVersion != null)
-                    {
-                        SetVersion(_upgradeVersionFilePath, currentVersion);
-                    }
-                    
+                    SaveOldVersion(currentVersion);
+
+                    Version latestVersion = currentVersion;
                     // Apply the actual upgrades
                     foreach (var migration in migrations)
                     {
                         _logger.LogInformation("Upgrading to version {Version}",migration.Version);
                         migration.Upgrade(_appData, _serviceProvider);
-
-                        SetVersion(_versionFilePath, migration.Version);
+                        latestVersion = migration.Version;
                     }
 
+                    _appData.SetCurrentVersion(latestVersion);
+                    
                     _logger.LogInformation("Migration completed, cleaning up");
                     File.Delete(_upgradeVersionFilePath);
                     File.Delete(_backupFilePath);
@@ -102,15 +98,7 @@ namespace dFakto.AppDataPath
             new DirectoryInfo(_appData.DataPath).DeleteAllContent();
             ZipFile.ExtractToDirectory(_backupFilePath, _appData.DataPath, true);
 
-            var previous = GetVersion(_upgradeVersionFilePath);
-            if (previous != null)
-            {
-                SetVersion(_versionFilePath, previous);
-            }
-            else
-            {
-                File.Delete(_versionFilePath);
-            }
+            _appData.SetCurrentVersion(RetrieveOldVersion());
 
             File.Delete(_upgradeVersionFilePath);
             File.Delete(_backupFilePath);
@@ -126,16 +114,16 @@ namespace dFakto.AppDataPath
             ZipFile.CreateFromDirectory(_appData.DataPath, _backupFilePath);
         }
 
-        private static Version? GetVersion(string versionFilePath)
+        private bool MigrationAborted => File.Exists(_upgradeVersionFilePath);
+        
+        private Version RetrieveOldVersion()
         {
-            if (!File.Exists(versionFilePath))
-                return null;
-            return Version.Parse(File.ReadAllText(versionFilePath));
+            return Version.Parse(File.ReadAllText(_upgradeVersionFilePath));
         }
 
-        private static void SetVersion(string versionFilePath, Version version)
+        private void SaveOldVersion(Version version)
         {
-            File.WriteAllText(versionFilePath, version.ToString());
+            File.WriteAllText(_upgradeVersionFilePath, version.ToString());
         }
     }
 }
