@@ -10,7 +10,7 @@ namespace dFakto.AppDataPathSampleHost
 {
     public class Mi1 : IAppDataMigration
     {
-        public Version Version => new("1.0");
+        public Version Version => new Version("1.0");
 
         public void Upgrade(AppData appData, IServiceProvider serviceProvider)
         {
@@ -20,7 +20,7 @@ namespace dFakto.AppDataPathSampleHost
 
     public class Mi2 : IAppDataMigration
     {
-        public Version Version => new("2.0");
+        public Version Version => new Version("2.0");
 
         public void Upgrade(AppData appData, IServiceProvider serviceProvider)
         {
