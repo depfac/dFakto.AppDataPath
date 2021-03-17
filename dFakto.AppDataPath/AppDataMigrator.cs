@@ -48,11 +48,11 @@ namespace dFakto.AppDataPath
             }
 
             var migrations = _serviceProvider.GetService<IAppDataMigrationProvider>().GetAppDataMigration().ToList();
-            
+
             CheckDuplicates(migrations);
 
             migrations = migrations.Where(x => x.Version > currentVersion).ToList();
-            
+
             if (migrations.Count == 0)
             {
                 _logger.LogDebug("AppData is already at the latest version");

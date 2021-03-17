@@ -10,28 +10,29 @@ namespace dFakto.AppDataPathSampleHost
 {
     public class Mi1 : IAppDataMigration
     {
-        public Version Version => new Version("1.0");
+        public Version Version => new("1.0");
 
         public void Upgrade(AppData appData, IServiceProvider serviceProvider)
         {
             File.WriteAllText(appData.GetDataFileName("test2.txt"), "CONTENT");
         }
     }
-    
+
     public class Mi2 : IAppDataMigration
     {
-        public Version Version => new Version("2.0");
+        public Version Version => new("2.0");
+
         public void Upgrade(AppData appData, IServiceProvider serviceProvider)
         {
             File.Delete(appData.GetDataFileName("test.txt"));
         }
     }
-    
+
     public class RootHostedService : IHostedService
     {
         private readonly AppData _appData;
         private readonly ILogger<RootHostedService> _logger;
-        
+
         public RootHostedService(
             AppData appData,
             AppDataMigrator appDataMigrator,
@@ -40,19 +41,19 @@ namespace dFakto.AppDataPathSampleHost
         {
             _appData = appData;
             _logger = logger;
-            
+
             appDataMigrator.Migrate();
-            
+
             appLifetime.ApplicationStarted.Register(OnStarted);
             appLifetime.ApplicationStopping.Register(OnStopping);
             appLifetime.ApplicationStopped.Register(OnStopped);
         }
-        
+
         public Task StartAsync(CancellationToken cancellationToken)
         {
             _logger.LogInformation("1. StartAsync has been called");
-            
-           return Task.CompletedTask;
+
+            return Task.CompletedTask;
         }
 
         public Task StopAsync(CancellationToken cancellationToken)
