@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Logging;
@@ -116,7 +117,7 @@ namespace dFakto.AppDataPath
 
         internal IEnumerable<string> GetConfigFileNames()
         {
-            return Directory.GetFiles(ConfigPath);
+            return Directory.GetFiles(ConfigPath).OrderBy(x => x);
         }
 
         internal void SetCurrentVersion(Version version)
