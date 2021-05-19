@@ -4,7 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace dFakto.AppDataPath
 {
-    public class DefaultAppDataMigrationProvider : IAppDataMigrationProvider
+    internal class DefaultAppDataMigrationProvider : IAppDataMigrationProvider
     {
         private readonly IServiceProvider _serviceProvider;
 

@@ -8,7 +8,7 @@ using Microsoft.Extensions.Logging;
 
 namespace dFakto.AppDataPath
 {
-    public class AppDataMigrator
+    internal class AppDataMigrator : IAppDataMigrator
     {
         private const string UpgradeFileName = "UPGRADING.txt";
         private const string BackupFileName = "APPDATA_BACKUP.zip";

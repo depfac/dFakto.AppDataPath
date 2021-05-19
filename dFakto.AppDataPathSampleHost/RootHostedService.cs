@@ -35,7 +35,7 @@ namespace dFakto.AppDataPathSampleHost
 
         public RootHostedService(
             AppData appData,
-            AppDataMigrator appDataMigrator,
+            IAppDataMigrator appDataMigrator,
             ILogger<RootHostedService> logger,
             IHostApplicationLifetime appLifetime)
         {

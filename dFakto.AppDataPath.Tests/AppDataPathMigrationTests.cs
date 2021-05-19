@@ -26,17 +26,14 @@ namespace dFakto.AppDataPath.Tests
         {
             var y = new ServiceCollection();
 
+            y.AddLogging();
+            y.AddAppData(_appDataConfig);
+            
             foreach (var mig in migrations)
             {
                 y.AddSingleton(mig);
             }
-
-            y.AddLogging();
-            y.AddSingleton(_appDataConfig);
-            y.AddSingleton<AppDataMigrator>();
-            y.AddSingleton<IAppDataMigrationProvider, DefaultAppDataMigrationProvider>();
-            y.AddSingleton<AppData>();
-
+            
             return y.BuildServiceProvider();
         }
 
@@ -45,7 +42,7 @@ namespace dFakto.AppDataPath.Tests
         {
             var serviceProvider = ConfigureServiceProvider(new IAppDataMigration[0]);
 
-            serviceProvider.GetService<AppDataMigrator>().Migrate();
+            serviceProvider.GetService<IAppDataMigrator>().Migrate();
 
             Assert.Equal(new Version(), serviceProvider.GetService<AppData>().CurrentVersion);
         }
@@ -61,7 +58,7 @@ namespace dFakto.AppDataPath.Tests
                     "test")
             });
 
-            serviceProvider.GetService<AppDataMigrator>().Migrate();
+            serviceProvider.GetService<IAppDataMigrator>().Migrate();
 
             var appData = serviceProvider.GetService<AppData>();
 
@@ -86,7 +83,7 @@ namespace dFakto.AppDataPath.Tests
                     "test2")
             });
 
-            serviceProvider.GetService<AppDataMigrator>().Migrate();
+            serviceProvider.GetService<IAppDataMigrator>().Migrate();
 
             var appData = serviceProvider.GetService<AppData>();
 
@@ -114,7 +111,7 @@ namespace dFakto.AppDataPath.Tests
                     "will be overwritten")
             });
 
-            serviceProvider.GetService<AppDataMigrator>().Migrate();
+            serviceProvider.GetService<IAppDataMigrator>().Migrate();
 
             var appData = serviceProvider.GetService<AppData>();
 
@@ -134,7 +131,7 @@ namespace dFakto.AppDataPath.Tests
                     "test")
             });
 
-            serviceProvider.GetService<AppDataMigrator>().Migrate();
+            serviceProvider.GetService<IAppDataMigrator>().Migrate();
 
             serviceProvider = ConfigureServiceProvider(new IAppDataMigration[]
             {
@@ -144,7 +141,7 @@ namespace dFakto.AppDataPath.Tests
                     "test2")
             });
 
-            serviceProvider.GetService<AppDataMigrator>().Migrate();
+            serviceProvider.GetService<IAppDataMigrator>().Migrate();
 
             var appData = serviceProvider.GetService<AppData>();
 
@@ -163,7 +160,7 @@ namespace dFakto.AppDataPath.Tests
                 new ThrowExceptionMigration<IOException>(new Version(1, 0))
             });
 
-            Assert.Throws<IOException>(() => serviceProvider.GetService<AppDataMigrator>().Migrate());
+            Assert.Throws<IOException>(() => serviceProvider.GetService<IAppDataMigrator>().Migrate());
 
             var appData = serviceProvider.GetService<AppData>();
 
@@ -182,7 +179,7 @@ namespace dFakto.AppDataPath.Tests
                 new ThrowExceptionMigration<IOException>(new Version(1, 1))
             });
 
-            Assert.Throws<IOException>(() => serviceProvider.GetService<AppDataMigrator>().Migrate());
+            Assert.Throws<IOException>(() => serviceProvider.GetService<IAppDataMigrator>().Migrate());
 
             var appData = serviceProvider.GetService<AppData>();
 
@@ -201,7 +198,7 @@ namespace dFakto.AppDataPath.Tests
                     "original")
             });
 
-            serviceProvider.GetService<AppDataMigrator>().Migrate();
+            serviceProvider.GetService<IAppDataMigrator>().Migrate();
 
             serviceProvider = ConfigureServiceProvider(new IAppDataMigration[]
             {
@@ -212,7 +209,7 @@ namespace dFakto.AppDataPath.Tests
                 new ThrowExceptionMigration<IOException>(new Version(2, 2))
             });
 
-            Assert.Throws<IOException>(() => serviceProvider.GetService<AppDataMigrator>().Migrate());
+            Assert.Throws<IOException>(() => serviceProvider.GetService<IAppDataMigrator>().Migrate());
 
             var appData = serviceProvider.GetService<AppData>();
 
@@ -230,7 +227,7 @@ namespace dFakto.AppDataPath.Tests
                 new OverwriteFileMigration(new Version(1, 0), "test2.txt", "coucou")
             });
 
-            Assert.Throws<Exception>(() => serviceProvider.GetService<AppDataMigrator>().Migrate());
+            Assert.Throws<Exception>(() => serviceProvider.GetService<IAppDataMigrator>().Migrate());
         }
 
         public class OverwriteFileMigration : IAppDataMigration

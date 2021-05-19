@@ -12,7 +12,7 @@ namespace dFakto.AppDataPath
         public static IServiceCollection AddAppData(this IServiceCollection services, AppDataConfig config)
         {
             services.AddSingleton(config);
-            services.AddSingleton<AppDataMigrator>();
+            services.AddSingleton<IAppDataMigrator,AppDataMigrator>();
             services.AddSingleton<IAppDataMigrationProvider, DefaultAppDataMigrationProvider>();
             services.AddSingleton<AppData>();
             return services;
