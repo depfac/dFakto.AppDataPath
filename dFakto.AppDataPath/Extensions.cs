@@ -9,6 +9,15 @@ namespace dFakto.AppDataPath
     {
         private const string AppDataConfig = "AppDataPathConfig";
 
+        public static IServiceCollection AddAppData(this IServiceCollection services, AppDataConfig config)
+        {
+            services.AddSingleton(config);
+            services.AddSingleton<AppDataMigrator>();
+            services.AddSingleton<IAppDataMigrationProvider, DefaultAppDataMigrationProvider>();
+            services.AddSingleton<AppData>();
+            return services;
+        }
+        
         public static IHostBuilder AddAppData(this IHostBuilder hostBuilder, string sectionName)
         {
             hostBuilder.ConfigureAppConfiguration((x, y) =>
@@ -25,10 +34,7 @@ namespace dFakto.AppDataPath
             });
             hostBuilder.ConfigureServices((x, y) =>
             {
-                y.AddSingleton((AppDataConfig) x.Properties[AppDataConfig]);
-                y.AddSingleton<AppDataMigrator>();
-                y.AddSingleton<IAppDataMigrationProvider, DefaultAppDataMigrationProvider>();
-                y.AddSingleton<AppData>();
+                y.AddAppData((AppDataConfig) x.Properties[AppDataConfig]);
             });
             return hostBuilder;
         }
