@@ -9,6 +9,13 @@ namespace dFakto.AppDataPath
     {
         private const string AppDataConfig = "AppDataPathConfig";
 
+        /// <summary>
+        /// Register AppData into Dependency injection using the provided AppDataConfig.
+        /// <remarks>If you are using a IHostBuilder, use IHostBuilder.AddAppData instead</remarks>
+        /// </summary>
+        /// <param name="services">Dependency Injection</param>
+        /// <param name="config">The configuration</param>
+        /// <returns>Dependency injection to chain calls</returns>
         public static IServiceCollection AddAppData(this IServiceCollection services, AppDataConfig config)
         {
             services.AddSingleton(config);
@@ -18,6 +25,13 @@ namespace dFakto.AppDataPath
             return services;
         }
         
+        /// <summary>
+        /// Register AppData into Dependency injection using the provided AppDataConfig.
+        /// Register AppData/config Json configuration files into IConfigurationBuilder
+        /// </summary>
+        /// <param name="hostBuilder">The Host being build</param>
+        /// <param name="sectionName">The configuration section to load configuration from</param>
+        /// <returns>IHost builder for call chaining</returns>
         public static IHostBuilder AddAppData(this IHostBuilder hostBuilder, string sectionName)
         {
             hostBuilder.ConfigureAppConfiguration((x, y) =>
@@ -62,14 +76,14 @@ namespace dFakto.AppDataPath
         ///     Set the attributes of the complete content of a directory to Normal, i.e not ReadOnly
         /// </summary>
         /// <param name="dir">Path to the directory</param>
-        private static void SetAttributesNormal(DirectoryInfo di)
+        private static void SetAttributesNormal(DirectoryInfo dir)
         {
-            foreach (var subDir in di.GetDirectories())
+            foreach (var subDir in dir.GetDirectories())
             {
                 SetAttributesNormal(subDir);
             }
 
-            foreach (var file in di.GetFiles())
+            foreach (var file in dir.GetFiles())
             {
                 File.SetAttributes(file.FullName, FileAttributes.Normal);
             }
