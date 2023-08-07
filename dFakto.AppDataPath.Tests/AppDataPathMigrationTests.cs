@@ -40,7 +40,7 @@ namespace dFakto.AppDataPath.Tests
         [Fact]
         public void TestNoMigration()
         {
-            var serviceProvider = ConfigureServiceProvider(new IAppDataMigration[0]);
+            var serviceProvider = ConfigureServiceProvider(Array.Empty<IAppDataMigration>());
 
             serviceProvider.GetService<IAppDataMigrator>().Migrate();
 

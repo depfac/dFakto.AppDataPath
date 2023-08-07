@@ -8,6 +8,9 @@ using Microsoft.Extensions.Logging;
 
 namespace dFakto.AppDataPath
 {
+    /// <summary>
+    /// Default implementation of the IAppDataMigrator
+    /// </summary>
     internal class AppDataMigrator : IAppDataMigrator
     {
         private const string UpgradeFileName = "UPGRADING.txt";

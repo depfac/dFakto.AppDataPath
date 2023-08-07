@@ -13,14 +13,9 @@ namespace dFakto.AppDataPath.Tests
         private readonly string _customConfigDir;
         private readonly IHost _customValuesHost;
         private readonly IHost _defaultValuesHost;
-        private ServiceProvider _serviceProvider;
 
         public AppDataPathTest()
         {
-            var services = new ServiceCollection();
-            services.AddLogging();
-            _serviceProvider = services.BuildServiceProvider();
-
             // Create custom directory with configs
             var appDataDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
             _customConfigDir = Path.Combine(appDataDir, "config");

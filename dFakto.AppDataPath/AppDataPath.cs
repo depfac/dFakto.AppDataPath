@@ -10,6 +10,9 @@ using Microsoft.Extensions.Logging;
 
 namespace dFakto.AppDataPath
 {
+    /// <summary>
+    /// Main Class used to manage Application data files
+    /// </summary>
     public class AppData : IDisposable
     {
         private const string VersionFileName = "VERSION.txt";
@@ -47,9 +50,23 @@ namespace dFakto.AppDataPath
 
         public Version CurrentVersion => GetCurrentVersion();
 
+        ~AppData()
+        {
+            Dispose(false);
+        }
+        
+        /// <summary>
+        /// Release all resource and Delete temp files if CleanupTempFileOnClose configuration flag is set to true.
+        /// </summary>
         public void Dispose()
         {
-            if (_config.CleanupTempFileOnClose)
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {            
+            if (disposing && _config.CleanupTempFileOnClose)
             {
                 try
                 {
@@ -62,10 +79,11 @@ namespace dFakto.AppDataPath
                 }
             }
         }
+            
 
         /// <summary>
         ///     Returns a FileName within the data folder.
-        ///     The Directory is automtically created
+        ///     The Directory is automatically created
         /// </summary>
         /// <param name="tokens">Path tokens</param>
         /// <returns>Data File Path</returns>
