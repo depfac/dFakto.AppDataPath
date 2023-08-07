@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
@@ -244,9 +245,9 @@ namespace dFakto.AppDataPath.Tests
 
             public Version Version { get; }
 
-            public void Upgrade(AppData appData, IServiceProvider serviceProvider)
+            public async ValueTask Upgrade(AppData appData, IServiceProvider serviceProvider)
             {
-                File.WriteAllText(appData.GetDataFileName(_fileName), _content);
+                await File.WriteAllTextAsync(appData.GetDataFileName(_fileName), _content);
             }
         }
 
@@ -259,7 +260,7 @@ namespace dFakto.AppDataPath.Tests
 
             public Version Version { get; }
 
-            public void Upgrade(AppData appData, IServiceProvider serviceProvider)
+            public ValueTask Upgrade(AppData appData, IServiceProvider serviceProvider)
             {
                 throw new T();
             }

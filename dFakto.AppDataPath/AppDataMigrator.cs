@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -33,7 +34,7 @@ namespace dFakto.AppDataPath
 
         private bool MigrationAborted => File.Exists(_upgradeVersionFilePath);
 
-        public void Migrate()
+        public async ValueTask Migrate()
         {
             // If this is a new install, or if the VERSION.txt does not exist for some reason
             // (pre-versioning deployment) tag this as pre-oldest version.
@@ -46,7 +47,7 @@ namespace dFakto.AppDataPath
                 // If an upgrade has already been attempted, then we are probably recovering from a crash,
                 // so run Restore procedures before trying to upgrade or running the app.
                 _logger.LogWarning("Metavault AppDataPath upgrade detected a crash during update. Recovering");
-                Restore();
+                await Restore();
                 _logger.LogInformation("Metavault AppDataPath upgrade recovery complete");
             }
 
@@ -64,22 +65,21 @@ namespace dFakto.AppDataPath
             {
                 migrations.Sort((x, y) => x.Version.CompareTo(y.Version));
 
-                _logger.LogInformation("{Count} Migrations of AppData must be performed, creating Backup first",
-                    migrations.Count);
+                _logger.LogInformation("{Count} Migrations of AppData must be performed, creating Backup first", migrations.Count);
                 // We need to upgrade the application. Make a backup
-                Backup();
+                await Backup();
                 _logger.LogDebug("Backup completed");
 
                 try
                 {
-                    SaveOldVersion(currentVersion);
+                    await SaveOldVersion(currentVersion);
 
-                    Version latestVersion = currentVersion;
+                    var latestVersion = currentVersion;
                     // Apply the actual upgrades
                     foreach (var migration in migrations)
                     {
                         _logger.LogInformation("Upgrading to version {Version}", migration.Version);
-                        migration.Upgrade(_appData, _serviceProvider);
+                        await migration.Upgrade(_appData, _serviceProvider);
                         latestVersion = migration.Version;
                     }
 
@@ -92,14 +92,14 @@ namespace dFakto.AppDataPath
                 catch (Exception e)
                 {
                     _logger.LogError(e, "Error while applying migrations, restoring backup");
-                    Restore();
+                    await Restore();
                     _logger.LogInformation("Backup restored successfully");
                     throw;
                 }
             }
         }
 
-        private static void CheckDuplicates(List<IAppDataMigration> migrations)
+        private static void CheckDuplicates(IEnumerable<IAppDataMigration> migrations)
         {
             var duplicates = migrations.GroupBy(x => x.Version)
                 .Where(g => g.Count() > 1)
@@ -112,18 +112,18 @@ namespace dFakto.AppDataPath
             }
         }
 
-        private void Restore()
+        private async ValueTask Restore()
         {
             new DirectoryInfo(_appData.DataPath).DeleteAllContent();
             ZipFile.ExtractToDirectory(_backupFilePath, _appData.DataPath, true);
 
-            _appData.SetCurrentVersion(RetrieveOldVersion());
+            _appData.SetCurrentVersion(await RetrieveOldVersion());
 
             File.Delete(_upgradeVersionFilePath);
             File.Delete(_backupFilePath);
         }
 
-        private void Backup()
+        private ValueTask Backup()
         {
             if (File.Exists(_backupFilePath))
             {
@@ -131,16 +131,17 @@ namespace dFakto.AppDataPath
             }
 
             ZipFile.CreateFromDirectory(_appData.DataPath, _backupFilePath);
+            return ValueTask.CompletedTask;
         }
 
-        private Version RetrieveOldVersion()
+        private async ValueTask<Version> RetrieveOldVersion()
         {
-            return Version.Parse(File.ReadAllText(_upgradeVersionFilePath));
+            return Version.Parse(await File.ReadAllTextAsync(_upgradeVersionFilePath));
         }
 
-        private void SaveOldVersion(Version version)
+        private async ValueTask SaveOldVersion(Version version)
         {
-            File.WriteAllText(_upgradeVersionFilePath, version.ToString());
+            await File.WriteAllTextAsync(_upgradeVersionFilePath, version.ToString());
         }
     }
 }

@@ -1,3 +1,5 @@
+using System.Threading.Tasks;
+
 namespace dFakto.AppDataPath
 {
     /// <summary>
@@ -9,6 +11,6 @@ namespace dFakto.AppDataPath
         /// <summary>
         /// Execute the migration if required
         /// </summary>
-        void Migrate();
+        ValueTask Migrate();
     }
 }

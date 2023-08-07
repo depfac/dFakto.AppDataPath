@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 
 namespace dFakto.AppDataPath
 {
@@ -18,6 +19,6 @@ namespace dFakto.AppDataPath
         /// </summary>
         /// <param name="appData">The AppData that needs to be migrated</param>
         /// <param name="serviceProvider">Dependency injection</param>
-        void Upgrade(AppData appData, IServiceProvider serviceProvider);
+        ValueTask Upgrade(AppData appData, IServiceProvider serviceProvider);
     }
 }

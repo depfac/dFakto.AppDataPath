@@ -32,14 +32,16 @@ namespace dFakto.AppDataPath
         /// <param name="hostBuilder">The Host being build</param>
         /// <param name="sectionName">The configuration section to load configuration from</param>
         /// <returns>IHost builder for call chaining</returns>
-        public static IHostBuilder AddAppData(this IHostBuilder hostBuilder, string sectionName)
+        public static IHostBuilder AddAppData(this IHostBuilder hostBuilder, string sectionName = "AppDataPath")
         {
             hostBuilder.ConfigureAppConfiguration((x, y) =>
             {
                 var appDataConfig = new AppDataConfig();
                 x.Configuration.GetSection(sectionName).Bind(appDataConfig);
+                
                 var appData = new AppData(null, appDataConfig);
                 hostBuilder.Properties.Add(AppDataConfig, appDataConfig);
+                
                 foreach (var configFileName in appData.GetConfigFileNames())
                 {
                     // Support other types of config ?
