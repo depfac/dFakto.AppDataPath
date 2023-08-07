@@ -12,9 +12,9 @@ namespace dFakto.AppDataPathSampleHost
     {
         public Version Version => new Version("1.0");
 
-        public void Upgrade(AppData appData, IServiceProvider serviceProvider)
+        public async ValueTask Upgrade(AppData appData, IServiceProvider serviceProvider)
         {
-            File.WriteAllText(appData.GetDataFileName("test2.txt"), "CONTENT");
+            await File.WriteAllTextAsync(appData.GetDataFileName("test2.txt"), "CONTENT");
         }
     }
 
@@ -22,9 +22,10 @@ namespace dFakto.AppDataPathSampleHost
     {
         public Version Version => new Version("2.0");
 
-        public void Upgrade(AppData appData, IServiceProvider serviceProvider)
+        public ValueTask Upgrade(AppData appData, IServiceProvider serviceProvider)
         {
             File.Delete(appData.GetDataFileName("test.txt"));
+            return ValueTask.CompletedTask;
         }
     }
 
