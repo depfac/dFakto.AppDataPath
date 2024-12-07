@@ -2,7 +2,7 @@
 
     <PropertyGroup>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
-        <PackageVersion>1.1.0.0</PackageVersion>
+        <PackageVersion>1.1.1.0</PackageVersion>
         <Copyright>dFakto</Copyright>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <TargetFramework>netstandard2.1</TargetFramework>
@@ -13,7 +13,6 @@
     <ItemGroup>
         <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.0" />
         <PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.0" />
-        <PackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="2.2.0" />
     </ItemGroup>
 
 </Project>
