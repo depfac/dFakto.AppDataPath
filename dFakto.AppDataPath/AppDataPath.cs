@@ -41,9 +41,9 @@ namespace dFakto.AppDataPath
             EmptyTemp();
         }
 
-        internal string ConfigPath => Path.Combine(BasePath, ConfigPathName);
-        internal string TempPath => Path.Combine(BasePath, TempPathName);
-        internal string DataPath => Path.Combine(BasePath, DataPathName);
+        public string ConfigPath => Path.Combine(BasePath, ConfigPathName);
+        public string TempPath => Path.Combine(BasePath, TempPathName);
+        public string DataPath => Path.Combine(BasePath, DataPathName);
 
         public Version CurrentVersion => GetCurrentVersion();
 
