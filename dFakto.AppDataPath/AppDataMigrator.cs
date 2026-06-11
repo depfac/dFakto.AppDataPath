@@ -17,11 +17,13 @@ namespace dFakto.AppDataPath
         private readonly string _backupFilePath;
         private readonly ILogger<AppDataMigrator> _logger;
         private readonly IServiceProvider _serviceProvider;
+        private readonly Version? _minimalAllowedVersion;
         private readonly string _upgradeVersionFilePath;
 
-        public AppDataMigrator(IServiceProvider serviceProvider)
+        public AppDataMigrator(IServiceProvider serviceProvider, Version? minimalAllowedVersion = null)
         {
             _serviceProvider = serviceProvider;
+            _minimalAllowedVersion = minimalAllowedVersion;
             _logger = _serviceProvider.GetService<ILogger<AppDataMigrator>>();
             _appData = _serviceProvider.GetService<AppData>();
             _backupFilePath = Path.Combine(_appData.BasePath, BackupFileName);
@@ -32,11 +34,19 @@ namespace dFakto.AppDataPath
 
         public void Migrate()
         {
-            // If this is a new install, or if the VERSION.txt does not exist for some reason
-            // (pre-versioning deployment) tag this as pre-oldest version.
-            // The oldest version is responsible for first deployment and migration of legacy
-            // appdatapaths.
             var currentVersion = _appData.CurrentVersion;
+
+            // If a minimal version cutoff is defined, and this isn't a new installation, and the current version
+            // is lower than the minimal allowed version, then we should abort the migration. We cannot handle
+            // application data that is this old.
+            if (_minimalAllowedVersion != null &&
+                currentVersion != new Version() &&
+                currentVersion < _minimalAllowedVersion)
+            {
+                throw new InvalidOperationException(
+                    $"Current AppData version \"{currentVersion}\" is lower than minimal allowed version " +
+                    $"\"{_minimalAllowedVersion}\" to execute an upgrade migration. Aborting.");
+            }
 
             if (MigrationAborted)
             {

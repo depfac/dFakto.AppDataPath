@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -9,16 +10,19 @@ namespace dFakto.AppDataPath
     {
         private const string AppDataConfig = "AppDataPathConfig";
 
-        public static IServiceCollection AddAppData(this IServiceCollection services, AppDataConfig config)
+        public static IServiceCollection AddAppData(this IServiceCollection services, AppDataConfig config,
+            Version? minimalAllowedVersion = null)
         {
             services.AddSingleton(config);
-            services.AddSingleton<IAppDataMigrator,AppDataMigrator>();
+            services.AddSingleton<IAppDataMigrator, AppDataMigrator>(serviceProvider =>
+                new AppDataMigrator(serviceProvider, minimalAllowedVersion));
             services.AddSingleton<IAppDataMigrationProvider, DefaultAppDataMigrationProvider>();
             services.AddSingleton<AppData>();
             return services;
         }
-        
-        public static IHostBuilder AddAppData(this IHostBuilder hostBuilder, string sectionName)
+
+        public static IHostBuilder AddAppData(this IHostBuilder hostBuilder, string sectionName,
+            Version? minimalAllowedVersion = null)
         {
             hostBuilder.ConfigureAppConfiguration((x, y) =>
             {
@@ -34,7 +38,7 @@ namespace dFakto.AppDataPath
             });
             hostBuilder.ConfigureServices((x, y) =>
             {
-                y.AddAppData((AppDataConfig) x.Properties[AppDataConfig]);
+                y.AddAppData((AppDataConfig) x.Properties[AppDataConfig], minimalAllowedVersion);
             });
             return hostBuilder;
         }
