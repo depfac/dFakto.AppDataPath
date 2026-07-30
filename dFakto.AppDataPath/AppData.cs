@@ -22,12 +22,13 @@ namespace dFakto.AppDataPath
         private const string DataPathName = "data";
         private readonly AppDataConfig _config;
 
-        private readonly ILogger<AppData>? _logger;
+        private readonly ILogger<AppData> _logger;
 
         public readonly string BasePath;
 
-        public AppData(ILogger<AppData>? logger, AppDataConfig config)
+        public AppData(ILogger<AppData> logger, AppDataConfig config)
         {
+            ArgumentNullException.ThrowIfNull(logger);
             ArgumentNullException.ThrowIfNull(config);
 
             _config = config;
@@ -38,11 +39,10 @@ namespace dFakto.AppDataPath
             Directory.CreateDirectory(ConfigPath);
             Directory.CreateDirectory(DataPath);
 
-            // Logger may be null when loading configuration
-            _logger?.LogInformation("Using '{BasePath}' as Application BasePath (Version: {Version})", BasePath, CurrentVersion);
+            _logger.LogInformation("Using '{BasePath}' as Application BasePath (Version: {Version})", BasePath, CurrentVersion);
 
             // Cleanup temp directory from eventual remaining files
-            _logger?.LogInformation("Cleaning '{TempPath}' for application startup", TempPath);
+            _logger.LogInformation("Cleaning '{TempPath}' for application startup", TempPath);
             EmptyTemp();
         }
 
@@ -64,12 +64,12 @@ namespace dFakto.AppDataPath
 
             try
             {
-                _logger?.LogInformation("Emptying '{TempPath}'", TempPath);
+                _logger.LogInformation("Emptying '{TempPath}'", TempPath);
                 EmptyTemp();
             }
             catch (Exception e)
             {
-                _logger?.LogError(e, "Unable to empty '{TempPath}'", TempPath);
+                _logger.LogError(e, "Unable to empty '{TempPath}'", TempPath);
             }
         }
 
@@ -145,7 +145,7 @@ namespace dFakto.AppDataPath
 
         internal void SetCurrentVersion(Version version)
         {
-            _logger?.LogInformation("AppData version set to: {Version}", version);
+            _logger.LogInformation("AppData version set to: {Version}", version);
             File.WriteAllText(GetCurrentVersionFileName(), version.ToString());
         }
 
