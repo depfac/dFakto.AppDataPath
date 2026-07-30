@@ -6,7 +6,7 @@ The goal of this project is to manage all the files that a project needs in a si
 
 The folder structure under the ```basePath``` (see below) looks like this :
 
-- ```tmp/```: Temporary files that should be discarded when no longer needed. It's important to regularly clean up these files.
+- ```temp/```: Temporary files that should be discarded when no longer needed. Depending of the application, it's important to regularly clean up these files.
 - ```config/```: JSON files that need to be integrated into the global Configuration system.
 - ```data/```: Any file used by the application that needs to be persisted, with a format that may evolve over time (see Migrations below).
 - ```VERSION.txt```: A simple file that contains the version of the structure. Refer to the section below for Migrations.

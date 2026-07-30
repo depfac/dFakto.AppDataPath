@@ -65,7 +65,7 @@ namespace dFakto.AppDataPath
         }
 
         protected virtual void Dispose(bool disposing)
-        {            
+        {
             if (disposing && _config.CleanupTempFileOnClose)
             {
                 try
