@@ -30,17 +30,18 @@ namespace dFakto.AppDataPath.Tests
 
             // Unset env variables, for default values
             Environment.SetEnvironmentVariable("DOTNET_AppDataPath:BasePath", null);
-            _defaultValuesHost = CreateHostBuilder().Build();
+            _defaultValuesHost = CreateHost();
 
             // Set env variable, for custom values
             Environment.SetEnvironmentVariable("DOTNET_AppDataPath:BasePath", appDataDir);
-            _customValuesHost = CreateHostBuilder().Build();
+            _customValuesHost = CreateHost();
         }
 
-        private static IHostBuilder CreateHostBuilder()
+        private static IHost CreateHost()
         {
-            return Host.CreateDefaultBuilder()
-                .AddAppData("AppDataPath");
+            var builder = Host.CreateApplicationBuilder();
+            builder.AddAppData();
+            return builder.Build();
         }
 
         [Fact]
