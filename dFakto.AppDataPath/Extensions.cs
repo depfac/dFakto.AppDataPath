@@ -16,6 +16,12 @@ namespace dFakto.AppDataPath
         /// </summary>
         /// <param name="services">Dependency Injection</param>
         /// <param name="config">The configuration</param>
+        /// <param name="minimalAllowedVersion">
+        /// The oldest on-disk data version this application is able to migrate from. When set, if the existing
+        /// AppData version is older than this value (and it is not a fresh installation), <see cref="IAppDataMigrator.Migrate"/>
+        /// aborts with an <see cref="InvalidOperationException"/> instead of attempting an unsupported upgrade.
+        /// Defaults to <c>null</c>, which disables the check.
+        /// </param>
         /// <returns>Dependency injection to chain calls</returns>
         public static IServiceCollection AddAppData(this IServiceCollection services, AppDataConfig config,
             Version? minimalAllowedVersion = null)
@@ -33,9 +39,15 @@ namespace dFakto.AppDataPath
         /// Register AppData/config Json configuration files into IConfigurationBuilder
         /// </summary>
         /// <param name="hostBuilder">The Host being build</param>
-        /// <param name="sectionName">The configuration section to load configuration from</param>
+        /// <param name="sectionName">The configuration section to load configuration from (default: "AppDataPath")</param>
+        /// <param name="minimalAllowedVersion">
+        /// The oldest on-disk data version this application is able to migrate from. When set, if the existing
+        /// AppData version is older than this value (and it is not a fresh installation), <see cref="IAppDataMigrator.Migrate"/>
+        /// aborts with an <see cref="InvalidOperationException"/> instead of attempting an unsupported upgrade.
+        /// Defaults to <c>null</c>, which disables the check.
+        /// </param>
         /// <returns>IHost builder for call chaining</returns>
-        public static IHostBuilder AddAppData(this IHostBuilder hostBuilder, string sectionName,
+        public static IHostBuilder AddAppData(this IHostBuilder hostBuilder, string sectionName = "AppDataPath",
             Version? minimalAllowedVersion = null)
         {
             hostBuilder.ConfigureAppConfiguration((x, y) =>

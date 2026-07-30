@@ -92,3 +92,24 @@ Note: Depending on the specific migration being executed, the `Migrate` method c
 var migrator = services.GetRequiredService<IAppDataMigrator>(); // Retrieve the IAppDataMigrator from DI
 await migrator.Migrate();
 ```
+
+### Minimal Allowed Version
+
+Over time, you may drop support for migrating very old data folders (for example, once the migration code for the
+oldest versions is removed). The optional `minimalAllowedVersion` parameter of `AddAppData` lets you declare the
+oldest on-disk version the application is still able to migrate from:
+
+```csharp
+var host = Host.CreateDefaultBuilder(args)
+    .AddAppData("AppDataPath", minimalAllowedVersion: new Version(2, 0))
+    .Build();
+host.Run();
+```
+
+When set, if the existing AppData version is **older** than this value, `Migrate` aborts immediately with an
+`InvalidOperationException` instead of attempting an unsupported upgrade. No backup is created and the data folder is
+left untouched.
+
+Notes:
+- A **fresh installation** (no `VERSION.txt` yet) is always allowed: the check only applies to an existing, versioned data folder.
+- The default value is `null`, which disables the check entirely (any version is accepted).
