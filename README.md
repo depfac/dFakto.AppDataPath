@@ -34,9 +34,10 @@ The default section name is "AppDataPath" and can be customized by using the opt
 
 #### Using Environment Variable
 ```shell
-export DOTNET_APPDATAPATH_BASEPATH="/tmp/test"
+export DOTNET_AppDataPath__BasePath="/tmp/test"
 ```
-Note : Environment variable configuration must be enabled using [AddEnvironmentVariables](https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.configuration.environmentvariablesextensions.addenvironmentvariables?view=dotnet-plat-ext-7.0#microsoft-extensions-configuration-environmentvariablesextensions-addenvironmentvariables(microsoft-extensions-configuration-iconfigurationbuilder-system-string))
+
+Note: Update AppDataPath to the name of your section if you are not using the default one.
 
 #### Use appsettings.json
 ```json 
@@ -101,7 +102,7 @@ oldest on-disk version the application is still able to migrate from:
 
 ```csharp
 var host = Host.CreateDefaultBuilder(args)
-    .AddAppData("AppDataPath", minimalAllowedVersion: new Version(2, 0))
+    .AddAppData(minimalAllowedVersion: new Version(2, 0))
     .Build();
 host.Run();
 ```
