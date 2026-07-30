@@ -83,10 +83,25 @@ namespace dFakto.AppDataPath
         /// <returns>Data File Path</returns>
         public string GetDataFileName(params string[] tokens)
         {
+            ArgumentNullException.ThrowIfNull(tokens);
+
             var elems = new List<string> {DataPath};
             elems.AddRange(tokens);
-            string path = Path.Combine(elems.ToArray());
-            Directory.CreateDirectory(Path.GetDirectoryName(path) ?? throw new InvalidOperationException());
+
+            var dataRoot = Path.GetFullPath(DataPath);
+            var path = Path.GetFullPath(Path.Combine(elems.ToArray()));
+
+            // Prevent path traversal: the resolved path must stay within the data folder.
+            if (path != dataRoot && !path.StartsWith(dataRoot + Path.DirectorySeparatorChar, StringComparison.Ordinal))
+            {
+                throw new ArgumentException(
+                    $"The resulting path '{path}' is outside the data folder '{dataRoot}'.", nameof(tokens));
+            }
+
+            var directory = Path.GetDirectoryName(path)
+                ?? throw new InvalidOperationException($"Unable to determine the parent directory of '{path}'.");
+            Directory.CreateDirectory(directory);
+
             return path;
         }
 

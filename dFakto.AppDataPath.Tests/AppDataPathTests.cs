@@ -92,5 +92,40 @@ namespace dFakto.AppDataPath.Tests
             appdata.EmptyTemp();
             Assert.False(File.Exists(fileName));
         }
+
+        [Fact]
+        public void GetDataFileName_WithValidTokens_ReturnsPathInsideDataFolder()
+        {
+            var appdata = _customValuesHost.Services.GetService<AppData>();
+
+            var path = appdata.GetDataFileName("sub", "file.txt");
+
+            var dataRoot = Path.GetFullPath(Path.Combine(appdata.BasePath, "data"));
+            Assert.StartsWith(dataRoot + Path.DirectorySeparatorChar, path);
+        }
+
+        [Fact]
+        public void GetDataFileName_WhenTokensIsNull_ThrowsArgumentNullException()
+        {
+            var appdata = _customValuesHost.Services.GetService<AppData>();
+
+            Assert.Throws<ArgumentNullException>(() => appdata.GetDataFileName((string[])null!));
+        }
+
+        [Fact]
+        public void GetDataFileName_WithParentTraversalToken_ThrowsArgumentException()
+        {
+            var appdata = _customValuesHost.Services.GetService<AppData>();
+
+            Assert.Throws<ArgumentException>(() => appdata.GetDataFileName("..", "..", "escape.txt"));
+        }
+
+        [Fact]
+        public void GetDataFileName_WithAbsolutePathToken_ThrowsArgumentException()
+        {
+            var appdata = _customValuesHost.Services.GetService<AppData>();
+
+            Assert.Throws<ArgumentException>(() => appdata.GetDataFileName(Path.GetTempPath()));
+        }
     }
 }
