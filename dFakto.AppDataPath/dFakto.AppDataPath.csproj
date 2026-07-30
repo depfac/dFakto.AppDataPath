@@ -5,7 +5,7 @@
         <PackageVersion>1.0.0.0</PackageVersion>
         <Copyright>dFakto</Copyright>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
-        <TargetFramework>net6.0</TargetFramework>
+        <TargetFramework>net10.0</TargetFramework>
         <Nullable>enable</Nullable>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <PackageReadmeFile>README.md</PackageReadmeFile>
