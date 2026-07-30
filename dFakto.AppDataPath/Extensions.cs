@@ -12,7 +12,7 @@ namespace dFakto.AppDataPath
 
         /// <summary>
         /// Register AppData into Dependency injection using the provided AppDataConfig.
-        /// <remarks>If you are using a IHostBuilder, use IHostBuilder.AddAppData instead</remarks>
+        /// <remarks>If you are using a host builder, use IHostApplicationBuilder.AddAppData instead</remarks>
         /// </summary>
         /// <param name="services">Dependency Injection</param>
         /// <param name="config">The configuration</param>
@@ -23,6 +23,7 @@ namespace dFakto.AppDataPath
         /// Defaults to <c>null</c>, which disables the check.
         /// </param>
         /// <returns>Dependency injection to chain calls</returns>
+        [Obsolete("Use IHostApplicationBuilder.AddAppData instead. This overload will be removed in a future major version.")]
         public static IServiceCollection AddAppData(this IServiceCollection services, AppDataConfig config,
             Version? minimalAllowedVersion = null)
         {
@@ -47,6 +48,7 @@ namespace dFakto.AppDataPath
         /// Defaults to <c>null</c>, which disables the check.
         /// </param>
         /// <returns>IHost builder for call chaining</returns>
+        [Obsolete("Use IHostApplicationBuilder.AddAppData instead. IHostBuilder is the legacy generic-host model; this overload will be removed in a future major version.")]
         public static IHostBuilder AddAppData(this IHostBuilder hostBuilder, string sectionName = "AppDataPath",
             Version? minimalAllowedVersion = null)
         {
@@ -77,6 +79,44 @@ namespace dFakto.AppDataPath
                 y.AddAppData((AppDataConfig) x.Properties[AppDataConfig], minimalAllowedVersion);
             });
             return hostBuilder;
+        }
+
+        /// <summary>
+        /// Register AppData into Dependency injection, binding <see cref="AppDataConfig"/> from the given
+        /// configuration section and registering the AppData/config JSON configuration files as additional
+        /// configuration sources.
+        /// </summary>
+        /// <param name="builder">The application host builder being configured</param>
+        /// <param name="sectionName">The configuration section to load configuration from (default: "AppDataPath")</param>
+        /// <param name="minimalAllowedVersion">
+        /// The oldest on-disk data version this application is able to migrate from. When set, if the existing
+        /// AppData version is older than this value (and it is not a fresh installation), <see cref="IAppDataMigrator.Migrate"/>
+        /// aborts with an <see cref="InvalidOperationException"/> instead of attempting an unsupported upgrade.
+        /// Defaults to <c>null</c>, which disables the check.
+        /// </param>
+        /// <returns>The host builder for call chaining</returns>
+        public static IHostApplicationBuilder AddAppData(this IHostApplicationBuilder builder,
+            string sectionName = "AppDataPath", Version? minimalAllowedVersion = null)
+        {
+            ArgumentNullException.ThrowIfNull(builder);
+            ArgumentException.ThrowIfNullOrWhiteSpace(sectionName);
+
+            var appDataConfig = new AppDataConfig();
+            builder.Configuration.GetSection(sectionName).Bind(appDataConfig);
+
+            foreach (var configFileName in AppData.GetConfigFileNames(appDataConfig))
+            {
+                // Support other types of config ?
+                builder.Configuration.AddJsonFile(configFileName, optional: true, reloadOnChange: true);
+            }
+
+            builder.Services.AddSingleton(appDataConfig);
+            builder.Services.AddSingleton<IAppDataMigrator, AppDataMigrator>(serviceProvider =>
+                new AppDataMigrator(serviceProvider, minimalAllowedVersion));
+            builder.Services.AddSingleton<IAppDataMigrationProvider, DefaultAppDataMigrationProvider>();
+            builder.Services.AddSingleton<AppData>();
+
+            return builder;
         }
 
         /// <summary>

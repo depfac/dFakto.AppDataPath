@@ -4,14 +4,12 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
 
-var host = Host.CreateDefaultBuilder(args)
-    .AddAppData()
-    .ConfigureServices((_, services) =>
-    {
-        services.AddTransient<IAppDataMigration, Mi1>();
-        services.AddTransient<IAppDataMigration, Mi2>();
-        services.AddHostedService<RootHostedService>();
-    }).Build();
-    
+var builder = Host.CreateApplicationBuilder(args);
+builder.AddAppData();
+builder.Services.AddTransient<IAppDataMigration, Mi1>();
+builder.Services.AddTransient<IAppDataMigration, Mi2>();
+builder.Services.AddHostedService<RootHostedService>();
+
+var host = builder.Build();
 host.Run();
     
