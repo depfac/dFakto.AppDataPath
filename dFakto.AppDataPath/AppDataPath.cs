@@ -29,7 +29,7 @@ namespace dFakto.AppDataPath
         public AppData(ILogger<AppData>? logger, AppDataConfig config)
         {
             _config = config ?? throw new ArgumentException(nameof(config));
-            BasePath = config.BasePath ?? GetDefaultBasePath();
+            BasePath = ResolveBasePath(config);
             _logger = logger;
 
             Directory.CreateDirectory(TempPath);
@@ -133,9 +133,21 @@ namespace dFakto.AppDataPath
             new DirectoryInfo(BasePath).DeleteAllContent();
         }
 
-        internal IEnumerable<string> GetConfigFileNames()
+        /// <summary>
+        ///     Returns the configuration file names available for the given configuration, without instantiating
+        ///     a full <see cref="AppData"/>. Used while building the host configuration.
+        /// </summary>
+        internal static IEnumerable<string> GetConfigFileNames(AppDataConfig config)
         {
-            return Directory.GetFiles(ConfigPath).OrderBy(x => x);
+            ArgumentNullException.ThrowIfNull(config);
+
+            var configPath = Path.Combine(ResolveBasePath(config), ConfigPathName);
+            if (!Directory.Exists(configPath))
+            {
+                return [];
+            }
+
+            return Directory.GetFiles(configPath).OrderBy(x => x);
         }
 
         internal void SetCurrentVersion(Version version)
@@ -159,6 +171,11 @@ namespace dFakto.AppDataPath
         private string GetCurrentVersionFileName()
         {
             return Path.Combine(BasePath, VersionFileName);
+        }
+
+        private static string ResolveBasePath(AppDataConfig config)
+        {
+            return config.BasePath ?? GetDefaultBasePath();
         }
 
         private static string GetDefaultBasePath()

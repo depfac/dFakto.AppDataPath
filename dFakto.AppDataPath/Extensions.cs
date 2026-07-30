@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -41,9 +42,10 @@ namespace dFakto.AppDataPath
             {
                 var appDataConfig = new AppDataConfig();
                 x.Configuration.GetSection(sectionName).Bind(appDataConfig);
-                var appData = new AppData(null, appDataConfig);
+
                 hostBuilder.Properties.Add(AppDataConfig, appDataConfig);
-                foreach (var configFileName in appData.GetConfigFileNames())
+
+                foreach (var configFileName in AppData.GetConfigFileNames(appDataConfig))
                 {
                     // Support other types of config ?
                     y.AddJsonFile(configFileName);
