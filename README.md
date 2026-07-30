@@ -15,12 +15,13 @@ Storing all these files in the same subdirectory greatly simplifies management, 
 
 ## Usage
 
-The simplest way to integrate AppData is to call `AddAppData()` on the `HostBuilder`.
+The simplest way to integrate AppData is to call `AddAppData()` on the application host builder.
 
 ```csharp
-var host = Host.CreateDefaultBuilder(args)
-    .AddAppData()
-    .Build();
+var builder = Host.CreateApplicationBuilder(args);
+builder.AddAppData();
+
+var host = builder.Build();
 host.Run();
 ```
 
@@ -71,13 +72,12 @@ Each migration is represented by a class that implements the `IAppDataMigration`
 #### Example of Migration Registrations
 
 ```csharp
-var host = Host.CreateDefaultBuilder(args)
-    .AddAppData()
-    .ConfigureServices((_, services) =>
-    {
-        services.AddTransient<IAppDataMigration, Mi1>();
-        services.AddTransient<IAppDataMigration, Mi2>();
-    }).Build();
+var builder = Host.CreateApplicationBuilder(args);
+builder.AddAppData();
+builder.Services.AddTransient<IAppDataMigration, Mi1>();
+builder.Services.AddTransient<IAppDataMigration, Mi2>();
+
+var host = builder.Build();
 host.Run();
 ```
 
@@ -101,9 +101,10 @@ oldest versions is removed). The optional `minimalAllowedVersion` parameter of `
 oldest on-disk version the application is still able to migrate from:
 
 ```csharp
-var host = Host.CreateDefaultBuilder(args)
-    .AddAppData(minimalAllowedVersion: new Version(2, 0))
-    .Build();
+var builder = Host.CreateApplicationBuilder(args);
+builder.AddAppData(minimalAllowedVersion: new Version(2, 0));
+
+var host = builder.Build();
 host.Run();
 ```
 

@@ -2,7 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Xunit;
 
 namespace dFakto.AppDataPath.Tests
@@ -25,17 +27,20 @@ namespace dFakto.AppDataPath.Tests
 
         private IServiceProvider ConfigureServiceProvider(IEnumerable<IAppDataMigration> migrations)
         {
-            var y = new ServiceCollection();
+            var builder = Host.CreateApplicationBuilder();
+            builder.Configuration.AddInMemoryCollection(new Dictionary<string, string>
+            {
+                ["AppDataPath:BasePath"] = _appDataConfig.BasePath
+            });
 
-            y.AddLogging();
-            y.AddAppData(_appDataConfig);
-            
+            builder.AddAppData();
+
             foreach (var mig in migrations)
             {
-                y.AddSingleton(mig);
+                builder.Services.AddSingleton(mig);
             }
-            
-            return y.BuildServiceProvider();
+
+            return builder.Build().Services;
         }
 
         [Fact]
