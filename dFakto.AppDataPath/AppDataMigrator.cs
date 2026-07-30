@@ -26,10 +26,12 @@ namespace dFakto.AppDataPath
 
         public AppDataMigrator(IServiceProvider serviceProvider, Version? minimalAllowedVersion = null)
         {
+            ArgumentNullException.ThrowIfNull(serviceProvider);
+
             _serviceProvider = serviceProvider;
             _minimalAllowedVersion = minimalAllowedVersion;
-            _logger = _serviceProvider.GetService<ILogger<AppDataMigrator>>();
-            _appData = _serviceProvider.GetService<AppData>();
+            _logger = _serviceProvider.GetRequiredService<ILogger<AppDataMigrator>>();
+            _appData = _serviceProvider.GetRequiredService<AppData>();
             _backupFilePath = Path.Combine(_appData.BasePath, BackupFileName);
             _upgradeVersionFilePath = Path.Combine(_appData.BasePath, UpgradeFileName);
         }
@@ -61,7 +63,7 @@ namespace dFakto.AppDataPath
                 _logger.LogInformation("AppData upgrade recovery complete");
             }
 
-            var migrations = _serviceProvider.GetService<IAppDataMigrationProvider>().GetAppDataMigration().ToList();
+            var migrations = _serviceProvider.GetRequiredService<IAppDataMigrationProvider>().GetAppDataMigration().ToList();
 
             CheckDuplicates(migrations);
 

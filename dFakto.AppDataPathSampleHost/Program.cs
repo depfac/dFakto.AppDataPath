@@ -5,7 +5,7 @@ using Microsoft.Extensions.Hosting;
 
 
 var host = Host.CreateDefaultBuilder(args)
-    .AddAppData()
+    .AddAppData("AppData")
     .ConfigureServices((_, services) =>
     {
         services.AddTransient<IAppDataMigration, Mi1>();
