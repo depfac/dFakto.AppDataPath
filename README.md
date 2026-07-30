@@ -34,7 +34,7 @@ The default section name is "AppDataPath" and can be customized by using the opt
 
 #### Using Environment Variable
 ```shell
-export DOTNET_AppDataPath__BasePath="/tmp/test"
+export AppDataPath__BasePath="/tmp/test"
 ```
 
 Note: Update AppDataPath to the name of your section if you are not using the default one.
