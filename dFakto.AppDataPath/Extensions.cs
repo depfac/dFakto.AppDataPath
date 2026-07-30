@@ -48,7 +48,7 @@ namespace dFakto.AppDataPath
                 foreach (var configFileName in AppData.GetConfigFileNames(appDataConfig))
                 {
                     // Support other types of config ?
-                    y.AddJsonFile(configFileName);
+                    y.AddJsonFile(configFileName, optional: true, reloadOnChange: true);
                 }
             });
             hostBuilder.ConfigureServices((x, y) =>
