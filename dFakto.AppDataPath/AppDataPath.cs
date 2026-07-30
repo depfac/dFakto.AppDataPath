@@ -163,10 +163,15 @@ namespace dFakto.AppDataPath
 
         private static string GetDefaultBasePath()
         {
+            var applicationName = Assembly.GetEntryAssembly()?.GetName().Name;
+            if (string.IsNullOrWhiteSpace(applicationName))
+                throw new InvalidOperationException(
+                    "Unable to determine the entry assembly name to build the default AppData BasePath. Configure an explicit 'BasePath' instead.");
+
             return Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData,
                     Environment.SpecialFolderOption.None),
-                Assembly.GetEntryAssembly()?.GetName().Name ?? "");
+                applicationName);
         }
     }
 }
