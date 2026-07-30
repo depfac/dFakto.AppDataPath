@@ -56,9 +56,9 @@ namespace dFakto.AppDataPath
             {
                 // If an upgrade has already been attempted, then we are probably recovering from a crash,
                 // so run Restore procedures before trying to upgrade or running the app.
-                _logger.LogWarning("Metavault AppDataPath upgrade detected a crash during update. Recovering");
+                _logger.LogWarning("AppData upgrade detected a crash during a previous update. Recovering");
                 await Restore();
-                _logger.LogInformation("Metavault AppDataPath upgrade recovery complete");
+                _logger.LogInformation("AppData upgrade recovery complete");
             }
 
             var migrations = _serviceProvider.GetService<IAppDataMigrationProvider>().GetAppDataMigration().ToList();
