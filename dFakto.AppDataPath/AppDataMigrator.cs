@@ -40,6 +40,13 @@ namespace dFakto.AppDataPath
 
         public async ValueTask Migrate()
         {
+            if (MigrationAborted)
+            {
+                _logger.LogWarning("AppData upgrade detected a crash during a previous update. Recovering");
+                await Restore();
+                _logger.LogInformation("AppData upgrade recovery complete");
+            }
+
             var currentVersion = _appData.CurrentVersion;
 
             // If a minimal version cutoff is defined, and this isn't a new installation, and the current version
@@ -52,15 +59,6 @@ namespace dFakto.AppDataPath
                 throw new InvalidOperationException(
                     $"Current AppData version \"{currentVersion}\" is lower than minimal allowed version " +
                     $"\"{_minimalAllowedVersion}\" to execute an upgrade migration. Aborting.");
-            }
-
-            if (MigrationAborted)
-            {
-                // If an upgrade has already been attempted, then we are probably recovering from a crash,
-                // so run Restore procedures before trying to upgrade or running the app.
-                _logger.LogWarning("AppData upgrade detected a crash during a previous update. Recovering");
-                await Restore();
-                _logger.LogInformation("AppData upgrade recovery complete");
             }
 
             var migrations = _serviceProvider.GetRequiredService<IAppDataMigrationProvider>().GetAppDataMigration().ToList();
