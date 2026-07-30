@@ -24,16 +24,15 @@ namespace dFakto.AppDataPath
 
         private readonly ILogger<AppData> _logger;
 
-        public readonly string BasePath;
-
         public AppData(ILogger<AppData> logger, AppDataConfig config)
         {
             ArgumentNullException.ThrowIfNull(logger);
             ArgumentNullException.ThrowIfNull(config);
 
             _config = config;
-            BasePath = ResolveBasePath(config);
             _logger = logger;
+            
+            BasePath = ResolveBasePath(config);
 
             Directory.CreateDirectory(TempPath);
             Directory.CreateDirectory(ConfigPath);
@@ -49,6 +48,8 @@ namespace dFakto.AppDataPath
         public string ConfigPath => Path.Combine(BasePath, ConfigPathName);
         public string TempPath => Path.Combine(BasePath, TempPathName);
         public string DataPath => Path.Combine(BasePath, DataPathName);
+
+        public string BasePath { get; }
 
         public Version CurrentVersion => GetCurrentVersion();
 
