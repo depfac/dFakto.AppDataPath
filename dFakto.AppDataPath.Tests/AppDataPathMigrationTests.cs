@@ -39,17 +39,17 @@ namespace dFakto.AppDataPath.Tests
         }
 
         [Fact]
-        public void TestNoMigration()
+        public async Task TestNoMigration()
         {
             var serviceProvider = ConfigureServiceProvider(Array.Empty<IAppDataMigration>());
 
-            serviceProvider.GetService<IAppDataMigrator>().Migrate();
+            await serviceProvider.GetService<IAppDataMigrator>().Migrate();
 
             Assert.Equal(new Version(), serviceProvider.GetService<AppData>().CurrentVersion);
         }
 
         [Fact]
-        public void TestCreateSingleFileMigration()
+        public async Task TestCreateSingleFileMigration()
         {
             var serviceProvider = ConfigureServiceProvider(new IAppDataMigration[]
             {
@@ -59,7 +59,7 @@ namespace dFakto.AppDataPath.Tests
                     "test")
             });
 
-            serviceProvider.GetService<IAppDataMigrator>().Migrate();
+            await serviceProvider.GetService<IAppDataMigrator>().Migrate();
 
             var appData = serviceProvider.GetService<AppData>();
 
@@ -69,7 +69,7 @@ namespace dFakto.AppDataPath.Tests
         }
 
         [Fact]
-        public void TestCreateTwoFilesMigration()
+        public async Task TestCreateTwoFilesMigration()
         {
             var serviceProvider = ConfigureServiceProvider(new IAppDataMigration[]
             {
@@ -84,7 +84,7 @@ namespace dFakto.AppDataPath.Tests
                     "test2")
             });
 
-            serviceProvider.GetService<IAppDataMigrator>().Migrate();
+            await serviceProvider.GetService<IAppDataMigrator>().Migrate();
 
             var appData = serviceProvider.GetService<AppData>();
 
@@ -96,7 +96,7 @@ namespace dFakto.AppDataPath.Tests
         }
 
         [Fact]
-        public void TestCreateTwoFilesMigrationUnordered()
+        public async Task TestCreateTwoFilesMigrationUnordered()
         {
             var serviceProvider = ConfigureServiceProvider(new IAppDataMigration[]
             {
@@ -112,7 +112,7 @@ namespace dFakto.AppDataPath.Tests
                     "will be overwritten")
             });
 
-            serviceProvider.GetService<IAppDataMigrator>().Migrate();
+            await serviceProvider.GetService<IAppDataMigrator>().Migrate();
 
             var appData = serviceProvider.GetService<AppData>();
 
@@ -122,7 +122,7 @@ namespace dFakto.AppDataPath.Tests
         }
 
         [Fact]
-        public void TestCreateTwoFilesMigrationInTwoSteps()
+        public async Task TestCreateTwoFilesMigrationInTwoSteps()
         {
             var serviceProvider = ConfigureServiceProvider(new IAppDataMigration[]
             {
@@ -132,7 +132,7 @@ namespace dFakto.AppDataPath.Tests
                     "test")
             });
 
-            serviceProvider.GetService<IAppDataMigrator>().Migrate();
+            await serviceProvider.GetService<IAppDataMigrator>().Migrate();
 
             serviceProvider = ConfigureServiceProvider(new IAppDataMigration[]
             {
@@ -142,7 +142,7 @@ namespace dFakto.AppDataPath.Tests
                     "test2")
             });
 
-            serviceProvider.GetService<IAppDataMigrator>().Migrate();
+            await serviceProvider.GetService<IAppDataMigrator>().Migrate();
 
             var appData = serviceProvider.GetService<AppData>();
 
@@ -154,14 +154,14 @@ namespace dFakto.AppDataPath.Tests
         }
 
         [Fact]
-        public void TestErrorInFirstMigration()
+        public async Task TestErrorInFirstMigration()
         {
             var serviceProvider = ConfigureServiceProvider(new IAppDataMigration[]
             {
                 new ThrowExceptionMigration<IOException>(new Version(1, 0))
             });
 
-            Assert.Throws<IOException>(() => serviceProvider.GetService<IAppDataMigrator>().Migrate());
+            await Assert.ThrowsAsync<IOException>(() => serviceProvider.GetService<IAppDataMigrator>().Migrate().AsTask());
 
             var appData = serviceProvider.GetService<AppData>();
 
@@ -169,7 +169,7 @@ namespace dFakto.AppDataPath.Tests
         }
 
         [Fact]
-        public void TestErrorRollback()
+        public async Task TestErrorRollback()
         {
             var serviceProvider = ConfigureServiceProvider(new IAppDataMigration[]
             {
@@ -180,7 +180,7 @@ namespace dFakto.AppDataPath.Tests
                 new ThrowExceptionMigration<IOException>(new Version(1, 1))
             });
 
-            Assert.Throws<IOException>(() => serviceProvider.GetService<IAppDataMigrator>().Migrate());
+            await Assert.ThrowsAsync<IOException>(() => serviceProvider.GetService<IAppDataMigrator>().Migrate().AsTask());
 
             var appData = serviceProvider.GetService<AppData>();
 
@@ -189,7 +189,7 @@ namespace dFakto.AppDataPath.Tests
         }
 
         [Fact]
-        public void TestErrorRollbackWithPreviousMigration()
+        public async Task TestErrorRollbackWithPreviousMigration()
         {
             var serviceProvider = ConfigureServiceProvider(new IAppDataMigration[]
             {
@@ -199,7 +199,7 @@ namespace dFakto.AppDataPath.Tests
                     "original")
             });
 
-            serviceProvider.GetService<IAppDataMigrator>().Migrate();
+            await serviceProvider.GetService<IAppDataMigrator>().Migrate();
 
             serviceProvider = ConfigureServiceProvider(new IAppDataMigration[]
             {
@@ -210,7 +210,7 @@ namespace dFakto.AppDataPath.Tests
                 new ThrowExceptionMigration<IOException>(new Version(2, 2))
             });
 
-            Assert.Throws<IOException>(() => serviceProvider.GetService<IAppDataMigrator>().Migrate());
+            await Assert.ThrowsAsync<IOException>(() => serviceProvider.GetService<IAppDataMigrator>().Migrate().AsTask());
 
             var appData = serviceProvider.GetService<AppData>();
 
@@ -220,7 +220,7 @@ namespace dFakto.AppDataPath.Tests
         }
 
         [Fact]
-        public void TestDuplicateMigrationForSameVersionThrowsException()
+        public async Task TestDuplicateMigrationForSameVersionThrowsException()
         {
             var serviceProvider = ConfigureServiceProvider(new IAppDataMigration[]
             {
@@ -228,7 +228,7 @@ namespace dFakto.AppDataPath.Tests
                 new OverwriteFileMigration(new Version(1, 0), "test2.txt", "coucou")
             });
 
-            Assert.Throws<Exception>(() => serviceProvider.GetService<IAppDataMigrator>().Migrate());
+            await Assert.ThrowsAsync<Exception>(() => serviceProvider.GetService<IAppDataMigrator>().Migrate().AsTask());
         }
 
         public class OverwriteFileMigration : IAppDataMigration

@@ -32,6 +32,7 @@ namespace dFakto.AppDataPathSampleHost
     public class RootHostedService : IHostedService
     {
         private readonly AppData _appData;
+        private readonly IAppDataMigrator _appDataMigrator;
         private readonly ILogger<RootHostedService> _logger;
 
         public RootHostedService(
@@ -41,20 +42,19 @@ namespace dFakto.AppDataPathSampleHost
             IHostApplicationLifetime appLifetime)
         {
             _appData = appData;
+            _appDataMigrator = appDataMigrator;
             _logger = logger;
-
-            appDataMigrator.Migrate();
 
             appLifetime.ApplicationStarted.Register(OnStarted);
             appLifetime.ApplicationStopping.Register(OnStopping);
             appLifetime.ApplicationStopped.Register(OnStopped);
         }
 
-        public Task StartAsync(CancellationToken cancellationToken)
+        public async Task StartAsync(CancellationToken cancellationToken)
         {
             _logger.LogInformation("1. StartAsync has been called");
 
-            return Task.CompletedTask;
+            await _appDataMigrator.Migrate();
         }
 
         public Task StopAsync(CancellationToken cancellationToken)
