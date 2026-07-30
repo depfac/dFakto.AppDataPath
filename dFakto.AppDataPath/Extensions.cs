@@ -53,7 +53,16 @@ namespace dFakto.AppDataPath
             hostBuilder.ConfigureAppConfiguration((x, y) =>
             {
                 var appDataConfig = new AppDataConfig();
-                x.Configuration.GetSection(sectionName).Bind(appDataConfig);
+
+                // Resolve the configuration from both the host configuration (x.Configuration) and the application
+                // configuration sources accumulated so far (y). Building 'y' lets us honor any source registered
+                // before AddAppData, including environment variables with a custom prefix (e.g. "MYAPP_").
+                var configuration = new ConfigurationBuilder()
+                    .AddConfiguration(x.Configuration)
+                    .AddConfiguration(y.Build())
+                    .Build();
+
+                configuration.GetSection(sectionName).Bind(appDataConfig);
 
                 hostBuilder.Properties.Add(AppDataConfig, appDataConfig);
 

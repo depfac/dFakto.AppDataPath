@@ -38,7 +38,7 @@ export DOTNET_AppDataPath__BasePath="/tmp/test"
 ```
 
 Note: Update AppDataPath to the name of your section if you are not using the default one.
-
+ompte
 #### Use appsettings.json
 ```json 
 {
