@@ -9,13 +9,13 @@ namespace dFakto.AppDataPath.Tests
 {
     public class AppDataPathMigrationTests : IDisposable
     {
-        private readonly AppDataConfig _appDataConfig = new AppDataConfig();
+        private readonly AppDataConfig _appDataConfig;
 
         public AppDataPathMigrationTests()
         {
             var tmp = Path.GetTempFileName();
             File.Delete(tmp);
-            _appDataConfig.BasePath = tmp;
+            _appDataConfig = new AppDataConfig { BasePath = tmp };
         }
 
         public void Dispose()

@@ -127,7 +127,7 @@ namespace dFakto.AppDataPath
         private async ValueTask Restore()
         {
             new DirectoryInfo(_appData.DataPath).DeleteAllContent();
-            ZipFile.ExtractToDirectory(_backupFilePath, _appData.DataPath, true);
+            await ZipFile.ExtractToDirectoryAsync(_backupFilePath, _appData.DataPath, true);
 
             _appData.SetCurrentVersion(await RetrieveOldVersion());
 
@@ -135,15 +135,14 @@ namespace dFakto.AppDataPath
             File.Delete(_backupFilePath);
         }
 
-        private ValueTask Backup()
+        private async ValueTask Backup()
         {
             if (File.Exists(_backupFilePath))
             {
                 File.Delete(_backupFilePath);
             }
 
-            ZipFile.CreateFromDirectory(_appData.DataPath, _backupFilePath);
-            return ValueTask.CompletedTask;
+            await ZipFile.CreateFromDirectoryAsync(_appData.DataPath, _backupFilePath);
         }
 
         private async ValueTask<Version> RetrieveOldVersion()

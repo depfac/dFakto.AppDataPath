@@ -13,7 +13,7 @@ namespace dFakto.AppDataPath
     /// <summary>
     /// Main Class used to manage Application data files
     /// </summary>
-    public class AppData : IDisposable
+    public sealed class AppData : IDisposable
     {
         private const string VersionFileName = "VERSION.txt";
 
@@ -28,7 +28,9 @@ namespace dFakto.AppDataPath
 
         public AppData(ILogger<AppData>? logger, AppDataConfig config)
         {
-            _config = config ?? throw new ArgumentException(nameof(config));
+            ArgumentNullException.ThrowIfNull(config);
+
+            _config = config;
             BasePath = ResolveBasePath(config);
             _logger = logger;
 
@@ -37,10 +39,10 @@ namespace dFakto.AppDataPath
             Directory.CreateDirectory(DataPath);
 
             // Logger may be null when loading configuration
-            _logger?.LogInformation($"Using '{BasePath}' as Application BasePath (Version : {CurrentVersion})");
+            _logger?.LogInformation("Using '{BasePath}' as Application BasePath (Version: {Version})", BasePath, CurrentVersion);
 
             // Cleanup temp directory from eventual remaining files
-            _logger?.LogInformation($"Cleaning '{TempPath}' for application startup");
+            _logger?.LogInformation("Cleaning '{TempPath}' for application startup", TempPath);
             EmptyTemp();
         }
 
@@ -50,36 +52,27 @@ namespace dFakto.AppDataPath
 
         public Version CurrentVersion => GetCurrentVersion();
 
-        ~AppData()
-        {
-            Dispose(false);
-        }
-        
         /// <summary>
-        /// Release all resource and Delete temp files if CleanupTempFileOnClose configuration flag is set to true.
+        /// Release all resources and delete temp files if the CleanupTempFileOnClose configuration flag is set to true.
         /// </summary>
         public void Dispose()
         {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (disposing && _config.CleanupTempFileOnClose)
+            if (!_config.CleanupTempFileOnClose)
             {
-                try
-                {
-                    _logger?.LogInformation("Emptying '{TempPath}'", TempPath);
-                    EmptyTemp();
-                }
-                catch (Exception e)
-                {
-                    _logger?.LogError(e, "Unable to empty '{TempPath}'", TempPath);
-                }
+                return;
+            }
+
+            try
+            {
+                _logger?.LogInformation("Emptying '{TempPath}'", TempPath);
+                EmptyTemp();
+            }
+            catch (Exception e)
+            {
+                _logger?.LogError(e, "Unable to empty '{TempPath}'", TempPath);
             }
         }
-            
+
 
         /// <summary>
         ///     Returns a FileName within the data folder.
