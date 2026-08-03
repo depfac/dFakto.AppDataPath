@@ -1,7 +1,9 @@
-namespace dFakto.AppDataPath
+namespace dFakto.AppDataPath;
+
+public interface IAppDataMigrator
 {
-    public interface IAppDataMigrator
-    {
-        void Migrate();
-    }
+    /// <summary>
+    /// Run the necessary migrations to get the appdata path to the latest version.
+    /// </summary>
+    void Migrate();
 }

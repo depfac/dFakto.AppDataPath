@@ -1,82 +1,68 @@
 using System;
 using System.IO;
+using System.Linq;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
-namespace dFakto.AppDataPath
+namespace dFakto.AppDataPath;
+
+public static class Extensions
 {
-    public static class Extensions
+    private const string PropertiesKey = "AppDataPathConfig";
+
+    public static IServiceCollection AddAppData(this IServiceCollection services, AppDataConfig config,
+        Version? minimalAllowedVersion = null)
     {
-        private const string AppDataConfig = "AppDataPathConfig";
-
-        public static IServiceCollection AddAppData(this IServiceCollection services, AppDataConfig config,
-            Version? minimalAllowedVersion = null)
+        services.AddSingleton(config);
+        services.AddSingleton<IAppDataMigrator, AppDataMigrator>(serviceProvider =>
+            new AppDataMigrator(serviceProvider, minimalAllowedVersion));
+        services.AddSingleton<IAppDataMigrationProvider, DefaultAppDataMigrationProvider>();
+        services.AddSingleton<IAppData, AppData>(serviceProvider =>
         {
-            services.AddSingleton(config);
-            services.AddSingleton<IAppDataMigrator, AppDataMigrator>(serviceProvider =>
-                new AppDataMigrator(serviceProvider, minimalAllowedVersion));
-            services.AddSingleton<IAppDataMigrationProvider, DefaultAppDataMigrationProvider>();
-            services.AddSingleton<AppData>();
-            return services;
-        }
+            var logger = serviceProvider.GetService<ILogger<AppData>>();
+            var newAppData = new AppData(serviceProvider.GetRequiredService<AppDataConfig>());
+            logger?.LogInformation("Using '{BasePath}' as Application BasePath. (Version : {CurrentVersion})",
+                newAppData.BasePath, newAppData.CurrentVersion);
 
-        public static IHostBuilder AddAppData(this IHostBuilder hostBuilder, string sectionName,
-            Version? minimalAllowedVersion = null)
-        {
-            hostBuilder.ConfigureAppConfiguration((x, y) =>
+            try
             {
-                var appDataConfig = new AppDataConfig();
-                x.Configuration.GetSection(sectionName).Bind(appDataConfig);
-                var appData = new AppData(null, appDataConfig);
-                hostBuilder.Properties.Add(AppDataConfig, appDataConfig);
-                foreach (var configFileName in appData.GetConfigFileNames())
-                {
-                    // Support other types of config ?
-                    y.AddJsonFile(configFileName);
-                }
-            });
-            hostBuilder.ConfigureServices((x, y) =>
+                // Attempt cleaning up the temp directory.
+                newAppData.DeleteDirectory(true, true, AppDataDir.Temp);
+            }
+            catch (Exception e)
             {
-                y.AddAppData((AppDataConfig) x.Properties[AppDataConfig], minimalAllowedVersion);
-            });
-            return hostBuilder;
-        }
-
-        /// <summary>
-        ///     Delete the contents of a directory. This does not delete the directory itself.
-        /// </summary>
-        /// <param name="directoryInfo">The directory to empty</param>
-        public static void DeleteAllContent(this DirectoryInfo directoryInfo)
-        {
-            SetAttributesNormal(directoryInfo);
-
-            foreach (var file in directoryInfo.GetFiles())
-            {
-                file.Delete();
+                logger?.LogError(e, "Failed to empty AppData temporary folder");
             }
 
-            foreach (var directory in directoryInfo.GetDirectories())
-            {
-                directory.Delete(true);
-            }
-        }
+            return newAppData;
+        });
 
-        /// <summary>
-        ///     Set the attributes of the complete content of a directory to Normal, i.e not ReadOnly
-        /// </summary>
-        /// <param name="dir">Path to the directory</param>
-        private static void SetAttributesNormal(DirectoryInfo di)
+        return services;
+    }
+
+    public static IHostBuilder AddAppData(this IHostBuilder hostBuilder, string configSectionName,
+        Version? minimalAllowedVersion = null)
+    {
+        hostBuilder.ConfigureAppConfiguration((x, y) =>
         {
-            foreach (var subDir in di.GetDirectories())
-            {
-                SetAttributesNormal(subDir);
-            }
+            var appDataConfig = new AppDataConfig();
+            x.Configuration.GetSection(configSectionName).Bind(appDataConfig);
+            var appData = new AppData(appDataConfig);
+            hostBuilder.Properties[PropertiesKey] = appDataConfig;
 
-            foreach (var file in di.GetFiles())
+            foreach (var configFileName in appData
+                         .GetDirectoryFiles("*.json", SearchOption.AllDirectories, AppDataDir.Config)
+                         .OrderBy(path => path))
             {
-                File.SetAttributes(file.FullName, FileAttributes.Normal);
+                y.AddJsonFile(configFileName);
             }
-        }
+        });
+        hostBuilder.ConfigureServices((x, y) =>
+        {
+            y.AddAppData((AppDataConfig) x.Properties[PropertiesKey], minimalAllowedVersion);
+        });
+        return hostBuilder;
     }
 }

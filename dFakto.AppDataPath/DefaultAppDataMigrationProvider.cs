@@ -2,20 +2,19 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace dFakto.AppDataPath
+namespace dFakto.AppDataPath;
+
+internal class DefaultAppDataMigrationProvider : IAppDataMigrationProvider
 {
-    internal class DefaultAppDataMigrationProvider : IAppDataMigrationProvider
+    private readonly IServiceProvider _serviceProvider;
+
+    public DefaultAppDataMigrationProvider(IServiceProvider serviceProvider)
     {
-        private readonly IServiceProvider _serviceProvider;
+        _serviceProvider = serviceProvider;
+    }
 
-        public DefaultAppDataMigrationProvider(IServiceProvider serviceProvider)
-        {
-            _serviceProvider = serviceProvider;
-        }
-
-        public IEnumerable<IAppDataMigration> GetAppDataMigration()
-        {
-            return _serviceProvider.GetServices<IAppDataMigration>();
-        }
+    public IEnumerable<IAppDataMigration> GetAppDataMigrations()
+    {
+        return _serviceProvider.GetServices<IAppDataMigration>();
     }
 }

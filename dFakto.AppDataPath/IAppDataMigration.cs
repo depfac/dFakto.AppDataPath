@@ -1,10 +1,15 @@
 using System;
 
-namespace dFakto.AppDataPath
+namespace dFakto.AppDataPath;
+
+public interface IAppDataMigration
 {
-    public interface IAppDataMigration
-    {
-        Version Version { get; }
-        void Upgrade(AppData appData, IServiceProvider serviceProvider);
-    }
+    /// <summary>
+    /// Should be overriden by the Version this migration migrates to.
+    /// </summary>
+    Version Version { get; }
+    /// <summary>
+    /// Run the migration to be compatible with version <see cref="Version"/>
+    /// </summary>
+    void Upgrade(IAppData appData, IServiceProvider serviceProvider);
 }

@@ -1,11 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <AssemblyVersion>2.0.0.0</AssemblyVersion>
-        <PackageVersion>2.0.0.0</PackageVersion>
+        <AssemblyVersion>3.0.0.0</AssemblyVersion>
+        <PackageVersion>3.0.0.0</PackageVersion>
         <Copyright>dFakto</Copyright>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
-        <TargetFramework>netstandard2.1</TargetFramework>
+        <TargetFramework>netstandard2.0</TargetFramework>
+        <LangVersion>14</LangVersion>
         <Nullable>enable</Nullable>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <PackageReadmeFile>README.md</PackageReadmeFile>

@@ -6,76 +6,72 @@ using dFakto.AppDataPath;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-namespace dFakto.AppDataPathSampleHost
+namespace dFakto.AppDataPathSampleHost;
+
+public class Mi1 : IAppDataMigration
 {
-    public class Mi1 : IAppDataMigration
-    {
-        public Version Version => new Version("1.0");
+    public Version Version => new Version("1.0");
 
-        public void Upgrade(AppData appData, IServiceProvider serviceProvider)
-        {
-            File.WriteAllText(appData.GetDataFileName("test2.txt"), "CONTENT");
-        }
+    public void Upgrade(IAppData appData, IServiceProvider serviceProvider)
+    {
+        File.WriteAllText(appData.GetFilePathAndCreateParents(AppDataDir.Data, "test2.txt"), "CONTENT");
+    }
+}
+
+public class Mi2 : IAppDataMigration
+{
+    public Version Version => new Version("2.0");
+
+    public void Upgrade(IAppData appData, IServiceProvider serviceProvider)
+    {
+        File.Delete(appData.GetFilePathAndCreateParents(AppDataDir.Data, "test.txt"));
+    }
+}
+
+public class RootHostedService : IHostedService
+{
+    private readonly ILogger<RootHostedService> _logger;
+
+    public RootHostedService(
+        IAppDataMigrator appDataMigrator,
+        ILogger<RootHostedService> logger,
+        IHostApplicationLifetime appLifetime)
+    {
+        _logger = logger;
+
+        appDataMigrator.Migrate();
+
+        appLifetime.ApplicationStarted.Register(OnStarted);
+        appLifetime.ApplicationStopping.Register(OnStopping);
+        appLifetime.ApplicationStopped.Register(OnStopped);
     }
 
-    public class Mi2 : IAppDataMigration
+    public Task StartAsync(CancellationToken cancellationToken)
     {
-        public Version Version => new Version("2.0");
+        _logger.LogInformation("1. StartAsync has been called");
 
-        public void Upgrade(AppData appData, IServiceProvider serviceProvider)
-        {
-            File.Delete(appData.GetDataFileName("test.txt"));
-        }
+        return Task.CompletedTask;
     }
 
-    public class RootHostedService : IHostedService
+    public Task StopAsync(CancellationToken cancellationToken)
     {
-        private readonly AppData _appData;
-        private readonly ILogger<RootHostedService> _logger;
+        _logger.LogInformation("4. StopAsync has been called");
 
-        public RootHostedService(
-            AppData appData,
-            IAppDataMigrator appDataMigrator,
-            ILogger<RootHostedService> logger,
-            IHostApplicationLifetime appLifetime)
-        {
-            _appData = appData;
-            _logger = logger;
+        return Task.CompletedTask;
+    }
 
-            appDataMigrator.Migrate();
+    private void OnStarted()
+    {
+        _logger.LogInformation("2. OnStarted has been called");
+    }
 
-            appLifetime.ApplicationStarted.Register(OnStarted);
-            appLifetime.ApplicationStopping.Register(OnStopping);
-            appLifetime.ApplicationStopped.Register(OnStopped);
-        }
+    private void OnStopping()
+    {
+        _logger.LogInformation("3. OnStopping has been called");
+    }
 
-        public Task StartAsync(CancellationToken cancellationToken)
-        {
-            _logger.LogInformation("1. StartAsync has been called");
-
-            return Task.CompletedTask;
-        }
-
-        public Task StopAsync(CancellationToken cancellationToken)
-        {
-            _logger.LogInformation("4. StopAsync has been called");
-
-            return Task.CompletedTask;
-        }
-
-        private void OnStarted()
-        {
-            _logger.LogInformation("2. OnStarted has been called");
-        }
-
-        private void OnStopping()
-        {
-            _logger.LogInformation("3. OnStopping has been called");
-        }
-
-        private void OnStopped()
-        {
-            _logger.LogInformation("5. OnStopped has been called");
-        }
+    private void OnStopped()
+    {
+        _logger.LogInformation("5. OnStopped has been called");
     }
 }

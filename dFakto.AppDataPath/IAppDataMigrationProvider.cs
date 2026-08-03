@@ -1,9 +1,12 @@
 using System.Collections.Generic;
 
-namespace dFakto.AppDataPath
+namespace dFakto.AppDataPath;
+
+public interface IAppDataMigrationProvider
 {
-    public interface IAppDataMigrationProvider
-    {
-        IEnumerable<IAppDataMigration> GetAppDataMigration();
-    }
+    /// <summary>
+    /// Get the list of existing migrations. Appdata path then handles: the orchestration, filtering of old versions,
+    /// sorting, and checking for duplicates.
+    /// </summary>
+    IEnumerable<IAppDataMigration> GetAppDataMigrations();
 }

@@ -6,148 +6,158 @@ using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace dFakto.AppDataPath
+namespace dFakto.AppDataPath;
+
+internal class AppDataMigrator : IAppDataMigrator
 {
-    internal class AppDataMigrator : IAppDataMigrator
+    private const string UpgradeFileName = "UPGRADING.txt";
+    private const string BackupFileName = "APPDATA_BACKUP.zip";
+
+    private readonly IAppData _appData;
+    private readonly ILogger<AppDataMigrator>? _logger;
+    private readonly IServiceProvider _serviceProvider;
+    private readonly Version? _minimalAllowedVersion;
+
+    public AppDataMigrator(IServiceProvider serviceProvider, Version? minimalAllowedVersion = null)
     {
-        private const string UpgradeFileName = "UPGRADING.txt";
-        private const string BackupFileName = "APPDATA_BACKUP.zip";
+        _serviceProvider = serviceProvider;
+        _minimalAllowedVersion = minimalAllowedVersion;
+        _appData = _serviceProvider.GetRequiredService<IAppData>();
+        _logger = _serviceProvider.GetService<ILogger<AppDataMigrator>>();
+    }
 
-        private readonly AppData _appData;
-        private readonly string _backupFilePath;
-        private readonly ILogger<AppDataMigrator> _logger;
-        private readonly IServiceProvider _serviceProvider;
-        private readonly Version? _minimalAllowedVersion;
-        private readonly string _upgradeVersionFilePath;
+    private bool MigrationAborted => File.Exists(_appData.GetFilePath(UpgradeFileName));
 
-        public AppDataMigrator(IServiceProvider serviceProvider, Version? minimalAllowedVersion = null)
+    public void Migrate()
+    {
+        if (MigrationAborted)
         {
-            _serviceProvider = serviceProvider;
-            _minimalAllowedVersion = minimalAllowedVersion;
-            _logger = _serviceProvider.GetService<ILogger<AppDataMigrator>>();
-            _appData = _serviceProvider.GetService<AppData>();
-            _backupFilePath = Path.Combine(_appData.BasePath, BackupFileName);
-            _upgradeVersionFilePath = Path.Combine(_appData.BasePath, UpgradeFileName);
+            // If an upgrade has already been attempted, then we are probably recovering from a crash,
+            // so run Restore procedures before trying to upgrade or running the app.
+            _logger?.LogWarning("AppDataPath upgrade detected a crash during update. Recovering");
+            Restore();
+            _logger?.LogInformation("AppDataPath upgrade recovery complete");
         }
 
-        private bool MigrationAborted => File.Exists(_upgradeVersionFilePath);
+        var currentVersion = _appData.CurrentVersion;
 
-        public void Migrate()
+        // If a minimal version cutoff is defined, and this isn't a new installation, and the current version
+        // is lower than the minimal allowed version, then we should abort the migration. We cannot handle
+        // application data that is this old.
+        if (_minimalAllowedVersion != null &&
+            currentVersion != new Version() &&
+            currentVersion < _minimalAllowedVersion)
         {
-            var currentVersion = _appData.CurrentVersion;
+            throw new InvalidOperationException(
+                $"Current AppData version \"{currentVersion}\" is lower than minimal allowed version " +
+                $"\"{_minimalAllowedVersion}\" to execute an upgrade migration. Aborting.");
+        }
 
-            // If a minimal version cutoff is defined, and this isn't a new installation, and the current version
-            // is lower than the minimal allowed version, then we should abort the migration. We cannot handle
-            // application data that is this old.
-            if (_minimalAllowedVersion != null &&
-                currentVersion != new Version() &&
-                currentVersion < _minimalAllowedVersion)
+        var migrations = _serviceProvider.GetService<IAppDataMigrationProvider>()?.GetAppDataMigrations().ToList() ??
+                         new List<IAppDataMigration>();
+
+        CheckDuplicates(migrations);
+
+        migrations = migrations.Where(x => x.Version > currentVersion).ToList();
+
+        if (migrations.Count == 0)
+        {
+            _logger?.LogDebug("AppData is already at the latest version");
+        }
+        else
+        {
+            migrations.Sort((x, y) => x.Version.CompareTo(y.Version));
+
+            _logger?.LogInformation("{Count} Migrations of AppData must be performed, creating Backup first",
+                migrations.Count);
+            // We need to upgrade the application. Make a backup
+            Backup();
+            _logger?.LogDebug("Backup completed");
+
+            try
+            {
+                SaveOldVersion(currentVersion);
+
+                Version latestVersion = currentVersion;
+                // Apply the actual upgrades
+                foreach (var migration in migrations)
+                {
+                    _logger?.LogInformation("Upgrading to version {Version}", migration.Version);
+                    migration.Upgrade(_appData, _serviceProvider);
+                    latestVersion = migration.Version;
+                }
+
+                SetVersion(latestVersion);
+
+                _logger?.LogInformation("Migration completed, cleaning up");
+                _appData.DeleteFile(UpgradeFileName);
+                _appData.DeleteFile(BackupFileName);
+            }
+            catch (Exception e)
             {
                 throw new InvalidOperationException(
-                    $"Current AppData version \"{currentVersion}\" is lower than minimal allowed version " +
-                    $"\"{_minimalAllowedVersion}\" to execute an upgrade migration. Aborting.");
-            }
-
-            if (MigrationAborted)
-            {
-                // If an upgrade has already been attempted, then we are probably recovering from a crash,
-                // so run Restore procedures before trying to upgrade or running the app.
-                _logger.LogWarning("Metavault AppDataPath upgrade detected a crash during update. Recovering");
-                Restore();
-                _logger.LogInformation("Metavault AppDataPath upgrade recovery complete");
-            }
-
-            var migrations = _serviceProvider.GetService<IAppDataMigrationProvider>().GetAppDataMigration().ToList();
-
-            CheckDuplicates(migrations);
-
-            migrations = migrations.Where(x => x.Version > currentVersion).ToList();
-
-            if (migrations.Count == 0)
-            {
-                _logger.LogDebug("AppData is already at the latest version");
-            }
-            else
-            {
-                migrations.Sort((x, y) => x.Version.CompareTo(y.Version));
-
-                _logger.LogInformation("{Count} Migrations of AppData must be performed, creating Backup first",
-                    migrations.Count);
-                // We need to upgrade the application. Make a backup
-                Backup();
-                _logger.LogDebug("Backup completed");
-
-                try
-                {
-                    SaveOldVersion(currentVersion);
-
-                    Version latestVersion = currentVersion;
-                    // Apply the actual upgrades
-                    foreach (var migration in migrations)
-                    {
-                        _logger.LogInformation("Upgrading to version {Version}", migration.Version);
-                        migration.Upgrade(_appData, _serviceProvider);
-                        latestVersion = migration.Version;
-                    }
-
-                    _appData.SetCurrentVersion(latestVersion);
-
-                    _logger.LogInformation("Migration completed, cleaning up");
-                    File.Delete(_upgradeVersionFilePath);
-                    File.Delete(_backupFilePath);
-                }
-                catch (Exception e)
-                {
-                    _logger.LogError(e, "Error while applying migrations, restoring backup");
-                    Restore();
-                    _logger.LogInformation("Backup restored successfully");
-                    throw;
-                }
+                    "Migration failed. Leaving directory as-is, AppDataPath will cleanup on restart", e);
             }
         }
+    }
 
-        private static void CheckDuplicates(List<IAppDataMigration> migrations)
+    private static void CheckDuplicates(List<IAppDataMigration> migrations)
+    {
+        var duplicates = migrations.GroupBy(x => x.Version)
+            .Where(g => g.Count() > 1)
+            .ToDictionary(x => x.Key, y => y.Count());
+
+        if (duplicates.Count > 0)
         {
-            var duplicates = migrations.GroupBy(x => x.Version)
-                .Where(g => g.Count() > 1)
-                .ToDictionary(x => x.Key, y => y.Count());
-
-            if (duplicates.Count > 0)
-            {
-                var (version, value) = duplicates.First();
-                throw new Exception($"{value} migrations are targeting the version {version}");
-            }
+            var firstDuplicate = duplicates.First();
+            var version = firstDuplicate.Key;
+            var count = firstDuplicate.Value;
+            throw new InvalidOperationException($"{count} migrations are targeting the version {version}");
         }
+    }
 
-        private void Restore()
+    private void Restore()
+    {
+        _appData.DeleteDirectory(true, true, AppDataDir.Data);
+
+        var backupFilePath = _appData.GetFilePath(BackupFileName);
+        var upgradeFilePath = _appData.GetFilePath(UpgradeFileName);
+        if (File.Exists(backupFilePath))
+            ZipFile.ExtractToDirectory(backupFilePath, _appData.DataPath);
+
+        SetVersion(RetrieveOldVersion());
+
+        if (File.Exists(upgradeFilePath))
+            File.Delete(upgradeFilePath);
+        if (File.Exists(backupFilePath))
+            File.Delete(backupFilePath);
+    }
+
+    private void Backup()
+    {
+        var backupFilePath = _appData.GetFilePath(BackupFileName);
+        if (File.Exists(backupFilePath))
         {
-            new DirectoryInfo(_appData.DataPath).DeleteAllContent();
-            ZipFile.ExtractToDirectory(_backupFilePath, _appData.DataPath, true);
-
-            _appData.SetCurrentVersion(RetrieveOldVersion());
-
-            File.Delete(_upgradeVersionFilePath);
-            File.Delete(_backupFilePath);
+            File.Delete(backupFilePath);
         }
 
-        private void Backup()
-        {
-            if (File.Exists(_backupFilePath))
-            {
-                File.Delete(_backupFilePath);
-            }
+        if (Directory.Exists(_appData.DataPath))
+            ZipFile.CreateFromDirectory(_appData.DataPath, backupFilePath);
+    }
 
-            ZipFile.CreateFromDirectory(_appData.DataPath, _backupFilePath);
-        }
+    private Version RetrieveOldVersion()
+    {
+        return Version.Parse(_appData.ReadAllText(UpgradeFileName));
+    }
 
-        private Version RetrieveOldVersion()
-        {
-            return Version.Parse(File.ReadAllText(_upgradeVersionFilePath));
-        }
+    private void SaveOldVersion(Version version)
+    {
+        _appData.WriteAllText(version.ToString(), UpgradeFileName);
+    }
 
-        private void SaveOldVersion(Version version)
-        {
-            File.WriteAllText(_upgradeVersionFilePath, version.ToString());
-        }
+    private void SetVersion(Version version)
+    {
+        _appData.WriteAllText(version.ToString(), AppData.VersionFileName);
+        _logger?.LogInformation("AppData version set to: {Version}", version);
     }
 }
