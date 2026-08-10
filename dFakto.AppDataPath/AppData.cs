@@ -8,7 +8,7 @@ using System.Runtime.CompilerServices;
 
 namespace dFakto.AppDataPath;
 
-public class AppData : IAppData
+internal class AppData : IAppData
 {
     internal const string VersionFileName = "VERSION.txt";
 
