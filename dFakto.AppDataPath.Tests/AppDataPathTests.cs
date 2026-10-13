@@ -97,4 +97,18 @@ public class AppDataPathTest
         // This should fail, because we try to escape
         Assert.Throws<ArgumentException>(() => appdata.GetFilePath("..", "cheese"));
     }
+
+    [Fact]
+    public void AppDataEscapeTrailingSeparator()
+    {
+        var existingAppdata = _customValuesHost.Services.GetService<IAppData>();
+        var basePath = existingAppdata.BasePath;
+
+        // Corrupt base path
+        var corruptPath = basePath + Path.DirectorySeparatorChar;
+        var corrupt = new AppData(new AppDataConfig{BasePath = corruptPath});
+
+        // This should succeed.
+        Assert.NotEmpty(corrupt.GetFilePath("hello"));
+    }
 }

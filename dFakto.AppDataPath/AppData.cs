@@ -174,8 +174,12 @@ public class AppData : IAppData
     /// </summary>
     private bool IsPathTraversalSafe(string path)
     {
-        return new Uri(BasePath + Path.DirectorySeparatorChar).IsBaseOf(
-            new Uri(path + Path.DirectorySeparatorChar));
+        var basePath = BasePath;
+
+        if (basePath == string.Empty || basePath[basePath.Length - 1] != Path.DirectorySeparatorChar)
+            basePath += Path.DirectorySeparatorChar;
+
+        return new Uri(basePath).IsBaseOf(new Uri(path + Path.DirectorySeparatorChar));
     }
 
     /// <summary>
