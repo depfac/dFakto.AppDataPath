@@ -2,6 +2,10 @@ using System;
 
 namespace dFakto.AppDataPath;
 
+/// <summary>
+/// Represents a few default locations for application data. Typically, these are subdirectories to the base path.
+/// One could imagine future implementations where they are completely separate. They are resolved at runtime.
+/// </summary>
 public enum AppDataDir
 {
     /// <summary>
@@ -19,6 +23,9 @@ public enum AppDataDir
     Temp
 }
 
+/// <summary>
+/// Extensions for AppDataDir.
+/// </summary>
 public static class DefaultFolderExtensions
 {
     /// <summary>

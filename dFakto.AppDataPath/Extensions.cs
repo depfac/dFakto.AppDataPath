@@ -8,10 +8,20 @@ using Microsoft.Extensions.Logging;
 
 namespace dFakto.AppDataPath;
 
+/// <summary>
+/// Extensions for Microsoft.Extensions
+/// </summary>
 public static class Extensions
 {
     private const string PropertiesKey = "AppDataPathConfig";
 
+    /// <summary>
+    /// Add required services to use AppData as part of an app that uses dependency injection.
+    /// </summary>
+    /// <param name="services">The service collection being built.</param>
+    /// <param name="config">The configuration of the appdata instance.</param>
+    /// <param name="minimalAllowedVersion">The minimal allowed version of the application data. If application data
+    /// exists and its version is lower than this, any migration will fail.</param>
     public static IServiceCollection AddAppData(this IServiceCollection services, AppDataConfig config,
         Version? minimalAllowedVersion = null)
     {
@@ -42,6 +52,20 @@ public static class Extensions
         return services;
     }
 
+    /// <summary>
+    /// Add required services to use AppData as part of an application host. The configuration of the AppData instance
+    /// is retrieved from default configuration entries in the given config section.
+    ///
+    /// If any JSON configuration files are available it the ConfigPath of AppData, these will be loaded here.
+    ///
+    /// Typically, one would want to call IAppDataMigrator.Migrate() once the host has finished building,
+    /// before running it.
+    /// </summary>
+    /// <param name="hostBuilder">The host being built.</param>
+    /// <param name="configSectionName">The name of the configuration section that will be used to retrieve the
+    /// AppDataConfig</param>
+    /// <param name="minimalAllowedVersion">The minimal allowed version of the application data. If application data
+    /// exists and its version is lower than this, any migration will fail.</param>
     public static IHostBuilder AddAppData(this IHostBuilder hostBuilder, string configSectionName,
         Version? minimalAllowedVersion = null)
     {

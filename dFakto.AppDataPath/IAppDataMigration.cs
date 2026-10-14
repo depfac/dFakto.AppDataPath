@@ -2,14 +2,18 @@ using System;
 
 namespace dFakto.AppDataPath;
 
+/// <summary>
+/// Represents the collection of actions to perform on an application path to migrate to <see cref="Version"/> from the
+/// version preceding it. An app should override this for every migration of application data.
+/// </summary>
 public interface IAppDataMigration
 {
     /// <summary>
-    /// Should be overriden by the Version this migration migrates to.
+    /// Should be overriden to return the Version this targets.
     /// </summary>
     Version Version { get; }
     /// <summary>
-    /// Run the migration to be compatible with version <see cref="Version"/>
+    /// This is run to migrate to version <see cref="Version"/>
     /// </summary>
     void Upgrade(IAppData appData, IServiceProvider serviceProvider);
 }

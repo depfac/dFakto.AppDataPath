@@ -3,6 +3,10 @@ using System.IO;
 
 namespace dFakto.AppDataPath;
 
+/// <summary>
+/// Represents the application data directory where configuration, temporary and persistant application data files can
+/// be read and written.
+/// </summary>
 public interface IAppData
 {
     /// <summary>

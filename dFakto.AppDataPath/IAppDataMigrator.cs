@@ -1,5 +1,8 @@
 namespace dFakto.AppDataPath;
 
+/// <summary>
+/// Runs migrations.
+/// </summary>
 public interface IAppDataMigrator
 {
     /// <summary>

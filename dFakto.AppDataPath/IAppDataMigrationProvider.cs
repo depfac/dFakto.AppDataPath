@@ -2,6 +2,9 @@ using System.Collections.Generic;
 
 namespace dFakto.AppDataPath;
 
+/// <summary>
+/// Retrieves, sorts and filters migrations.
+/// </summary>
 public interface IAppDataMigrationProvider
 {
     /// <summary>

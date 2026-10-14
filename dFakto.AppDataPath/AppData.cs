@@ -8,6 +8,9 @@ using System.Runtime.CompilerServices;
 
 namespace dFakto.AppDataPath;
 
+/// <summary>
+/// See: <see cref="IAppData"/>
+/// </summary>
 public class AppData : IAppData
 {
     internal const string VersionFileName = "VERSION.txt";
@@ -15,20 +18,42 @@ public class AppData : IAppData
     private readonly AppDataConfig _config;
     private string? _defaultBasePathCached;
 
+    /// <summary>
+    /// Build a new appdata path instance.
+    /// </summary>
+    /// <param name="config">The appdata configuration parameters.</param>
     public AppData(AppDataConfig config)
     {
         _config = config ?? throw new ArgumentNullException(nameof(config));
     }
 
+    /// <summary>
+    /// See: <see cref="IAppData.BasePath"/>
+    /// </summary>
     public string BasePath => _config.BasePath ?? GetDefaultBasePath();
+    /// <summary>
+    /// See: <see cref="IAppData.ConfigPath"/>
+    /// </summary>
     public string ConfigPath => GetFilePath(AppDataDir.Config);
+    /// <summary>
+    /// See: <see cref="IAppData.TempPath"/>
+    /// </summary>
     public string TempPath => GetFilePath(AppDataDir.Temp);
+    /// <summary>
+    /// See: <see cref="IAppData.DataPath"/>
+    /// </summary>
     public string DataPath => GetFilePath(AppDataDir.Data);
 
+    /// <summary>
+    /// See: <see cref="IAppData.CurrentVersion"/>
+    /// </summary>
     public Version CurrentVersion => Version.TryParse(ReadAllText(VersionFileName), out var result)
         ? result
         : new Version();
 
+    /// <summary>
+    /// See: <see cref="IAppData.GetFilePath(string[])"/>
+    /// </summary>
     public string GetFilePath(params string[] pathSegments)
     {
         var segments = Prepend(BasePath, pathSegments);
@@ -42,11 +67,17 @@ public class AppData : IAppData
         return combinedPath;
     }
 
+    /// <summary>
+    /// See: <see cref="IAppData.GetFilePath(AppDataDir, string[])"/>
+    /// </summary>
     public string GetFilePath(AppDataDir dir, params string[] pathSegments)
     {
         return GetFilePath(Prepend(dir.ToDirectoryName(), pathSegments));
     }
 
+    /// <summary>
+    /// See: <see cref="IAppData.GetFilePathAndCreateParents(string[])"/>
+    /// </summary>
     public string GetFilePathAndCreateParents(params string[] pathSegments)
     {
         var path = GetFilePath(pathSegments);
@@ -54,6 +85,9 @@ public class AppData : IAppData
         return path;
     }
 
+    /// <summary>
+    /// See: <see cref="IAppData.GetFilePathAndCreateParents(AppDataDir, string[])"/>
+    /// </summary>
     public string GetFilePathAndCreateParents(AppDataDir dir, params string[] pathSegments)
     {
         var path = GetFilePath(dir, pathSegments);
@@ -61,6 +95,9 @@ public class AppData : IAppData
         return path;
     }
 
+    /// <summary>
+    /// See: <see cref="IAppData.ReadAllText(string[])"/>
+    /// </summary>
     public string ReadAllText(params string[] pathSegments)
     {
         var path = GetFilePath(pathSegments);
@@ -71,11 +108,17 @@ public class AppData : IAppData
         return File.ReadAllText(path);
     }
 
+    /// <summary>
+    /// See: <see cref="IAppData.ReadAllText(AppDataDir, string[])"/>
+    /// </summary>
     public string ReadAllText(AppDataDir dir, params string[] pathSegments)
     {
         return ReadAllText(Prepend(dir.ToDirectoryName(), pathSegments));
     }
 
+    /// <summary>
+    /// See: <see cref="IAppData.WriteAllText(string, string[])"/>
+    /// </summary>
     public void WriteAllText(string contents, params string[] pathSegments)
     {
         var path = GetFilePath(pathSegments);
@@ -83,6 +126,9 @@ public class AppData : IAppData
         File.WriteAllText(path, contents);
     }
 
+    /// <summary>
+    /// See: <see cref="IAppData.WriteAllText(string, AppDataDir, string[])"/>
+    /// </summary>
     public void WriteAllText(string contents, AppDataDir dir, params string[] pathSegments)
     {
         var path = GetFilePath(dir, pathSegments);
@@ -90,6 +136,9 @@ public class AppData : IAppData
         File.WriteAllText(path, contents);
     }
 
+    /// <summary>
+    /// See: <see cref="IAppData.AppendAllText(string, string[])"/>
+    /// </summary>
     public void AppendAllText(string contents, params string[] pathSegments)
     {
         var path = GetFilePath(pathSegments);
@@ -97,6 +146,9 @@ public class AppData : IAppData
         File.AppendAllText(path, contents);
     }
 
+    /// <summary>
+    /// See: <see cref="IAppData.AppendAllText(string, AppDataDir, string[])"/>
+    /// </summary>
     public void AppendAllText(string contents, AppDataDir dir, params string[] pathSegments)
     {
         var path = GetFilePath(dir, pathSegments);
@@ -104,6 +156,9 @@ public class AppData : IAppData
         File.AppendAllText(path, contents);
     }
 
+    /// <summary>
+    /// See: <see cref="IAppData.DeleteFile(string[])"/>
+    /// </summary>
     public void DeleteFile(params string[] pathSegments)
     {
         var path = GetFilePath(pathSegments);
@@ -111,6 +166,9 @@ public class AppData : IAppData
             File.Delete(path);
     }
 
+    /// <summary>
+    /// See: <see cref="IAppData.DeleteFile(AppDataDir, string[])"/>
+    /// </summary>
     public void DeleteFile(AppDataDir dir, params string[] pathSegments)
     {
         var path = GetFilePath(dir, pathSegments);
@@ -118,6 +176,9 @@ public class AppData : IAppData
             File.Delete(path);
     }
 
+    /// <summary>
+    /// See: <see cref="IAppData.DeleteDirectory(bool, bool, string[])"/>
+    /// </summary>
     public void DeleteDirectory(bool excludeTopDir, bool force, params string[] pathSegments)
     {
         var path = GetFilePath(pathSegments);
@@ -136,11 +197,17 @@ public class AppData : IAppData
         }
     }
 
+    /// <summary>
+    /// See: <see cref="IAppData.DeleteDirectory(bool, bool, AppDataDir, string[])"/>
+    /// </summary>
     public void DeleteDirectory(bool excludeTopDir, bool force, AppDataDir dir, params string[] pathSegments)
     {
         DeleteDirectory(excludeTopDir, force, Prepend(dir.ToDirectoryName(), pathSegments));
     }
 
+    /// <summary>
+    /// See: <see cref="IAppData.GetDirectoryFiles(string[])"/>
+    /// </summary>
     public string[] GetDirectoryFiles(params string[] pathSegments)
     {
         var path = GetFilePath(pathSegments);
@@ -149,11 +216,17 @@ public class AppData : IAppData
         return Directory.GetFiles(path);
     }
 
+    /// <summary>
+    /// See: <see cref="IAppData.GetDirectoryFiles(AppDataDir, string[])"/>
+    /// </summary>
     public string[] GetDirectoryFiles(AppDataDir dir, params string[] pathSegments)
     {
         return GetDirectoryFiles(Prepend(dir.ToDirectoryName(), pathSegments));
     }
 
+    /// <summary>
+    /// See: <see cref="IAppData.GetDirectoryFiles(string, SearchOption, string[])"/>
+    /// </summary>
     public string[] GetDirectoryFiles(string searchPattern, SearchOption options, params string[] pathSegments)
     {
         var path = GetFilePath(pathSegments);
@@ -162,6 +235,9 @@ public class AppData : IAppData
         return Directory.GetFiles(path, searchPattern, options);
     }
 
+    /// <summary>
+    /// See: <see cref="IAppData.GetDirectoryFiles(string, SearchOption, AppDataDir, string[])"/>
+    /// </summary>
     public string[] GetDirectoryFiles(
         string searchPattern, SearchOption options, AppDataDir dir, params string[] pathSegments)
     {
